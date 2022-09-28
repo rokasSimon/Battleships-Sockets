@@ -73,11 +73,13 @@ namespace BattleshipsCore.Game
                 MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
                 MessageType.GetSessionList => ToCommand<GetSessionListRequest>(jo),
                 MessageType.GetSessionData => ToCommand<GetSessionDataRequest>(jo),
+                MessageType.GetMapData => ToCommand<GetMapDataRequest>(jo),
 
                 MessageType.SendPlayerList => ToMessage<SendPlayerListResponse>(jo),
                 MessageType.SendSessionKey => ToMessage<SendSessionKeyResponse>(jo),
                 MessageType.SendSessionList => ToMessage<SendSessionListResponse>(jo),
                 MessageType.SendSessionData => ToMessage<SendSessionDataResponse>(jo),
+                MessageType.SendMapData => ToMessage<SendMapDataResponse>(jo),
 
                 MessageType.JoinServer => ToCommand<JoinServerRequest>(jo),
                 MessageType.Disconnect => ToCommand<DisconnectRequest>(jo),
@@ -85,6 +87,9 @@ namespace BattleshipsCore.Game
                 MessageType.JoinSession => ToCommand<JoinSessionRequest>(jo),
                 MessageType.LeaveSession => ToCommand<LeaveSessionRequest>(jo),
                 MessageType.CreateSession => ToCommand<CreateSessionRequest>(jo),
+
+                MessageType.StartGame => ToCommand<StartGameRequest>(jo),
+                
 
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
             };

@@ -16,6 +16,16 @@ namespace BattleshipsCoreClient
             FormClosed += SessionForm_FormClosed;
         }
 
+        public void ShowWindow()
+        {
+            Program.ConnectionForm.Hide();
+            Program.ActiveSessionForm.Hide();
+            Program.PlacementForm.Hide();
+
+            RefreshSessions();
+            Show();
+        }
+
         private void SessionForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
             Application.Exit();
@@ -54,8 +64,20 @@ namespace BattleshipsCoreClient
                     return;
                 }
 
-                SwitchToSingleSessionForm(createdSessionData);
+                Program.ActiveSessionForm.ShowWindow(createdSessionData);
             }
+        }
+
+        private void DisconnectButton_Click(object sender, EventArgs e)
+        {
+            var success = GameClientManager.Instance.Disconnect();
+
+            if (!success)
+            {
+                MessageBox.Show("Already disconnected", "Error");
+            }
+
+            Program.ConnectionForm.ShowWindow();
         }
 
         private void RefreshSessions()
@@ -94,14 +116,7 @@ namespace BattleshipsCoreClient
                 return;
             }
 
-            SwitchToSingleSessionForm(GameClientManager.Instance.ActiveSession!);
-        }
-
-        private void SwitchToSingleSessionForm(GameSessionData session)
-        {
-            Program.ActiveSessionForm.Show();
-            Program.ActiveSessionForm.UpdateSessionData(session);
-            Hide();
+            Program.ActiveSessionForm.ShowWindow(session);
         }
     }
 }

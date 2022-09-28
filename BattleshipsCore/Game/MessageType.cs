@@ -16,11 +16,15 @@
         SendSessionKey = 11,
         SendSessionList = 12,
         SendSessionData = 13,
+        SendMapData = 14,
 
         CreateSession = 20,
 
         GetSessionList = 30,
         GetSessionData = 31,
         GetPlayerList = 32,
+        GetMapData = 33,
+
+        StartGame = 50,
     }
 }

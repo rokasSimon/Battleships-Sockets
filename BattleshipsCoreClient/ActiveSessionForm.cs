@@ -1,15 +1,7 @@
 ﻿using BattleshipsCore.Data;
+using BattleshipsCore.Game;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace BattleshipsCoreClient
 {
@@ -27,10 +19,31 @@ namespace BattleshipsCoreClient
             FormClosed += ActiveSessionForm_FormClosed;
         }
 
-        public void UpdateSessionData(GameSessionData sessionData)
+        public void ShowWindow(GameSessionData sessionData)
         {
-            SessionData = sessionData;
-            JoinedPlayers = sessionData.PlayerNames;
+            Program.ConnectionForm.Hide();
+            Program.SessionForm.Hide();
+
+            ClearData();
+            UpdateSessionData(sessionData);
+            Show();
+        }
+
+        private void UpdateSessionData(GameSessionData sessionData)
+        {
+            var freshSessionData = GameClientManager.Instance
+                .Client!
+                .SendCommand<GetSessionDataRequest, SendSessionDataResponse>(
+                new GetSessionDataRequest(sessionData.SessionKey));
+
+            if (freshSessionData == null)
+            {
+                MessageBox.Show("Could not update session list.", "Error");
+                return;
+            }
+
+            SessionData = freshSessionData.SessionData;
+            JoinedPlayers = SessionData.PlayerNames;
 
             PlayerListBox.Items.Clear();
             foreach (var player in JoinedPlayers)
@@ -50,10 +63,7 @@ namespace BattleshipsCoreClient
 
             if (success)
             {
-                ClearData();
-
-                Program.SessionForm.Show();
-                Hide();
+                Program.SessionForm.ShowWindow();
             }
             else
             {
@@ -65,26 +75,52 @@ namespace BattleshipsCoreClient
         {
             if (SessionData == null)
             {
-                MessageBox.Show("Failed to refresh.", "Error");
+                MessageBox.Show("Session does not exist.", "Error");
+
+                Program.SessionForm.ShowWindow();
                 return;
             }
 
-            var sessionResponse = GameClientManager.Instance.Client!
-                    .SendCommand<GetSessionDataRequest, SendSessionDataResponse>(
-                    new GetSessionDataRequest(SessionData.SessionKey));
-
-            if (sessionResponse == null)
-            {
-                MessageBox.Show("Failed to refresh.", "Error");
-                return;
-            }
-
-            UpdateSessionData(sessionResponse.SessionData);
+            UpdateSessionData(SessionData);
         }
 
         private void StartGameButton_Click(object sender, EventArgs e)
         {
+            if (SessionData == null)
+            {
+                MessageBox.Show("Session does not exist.", "Error");
 
+                Program.SessionForm.ShowWindow();
+                return;
+            }
+
+            var okResponse = GameClientManager.Instance
+                .Client!
+                .SendCommand<StartGameRequest, OkResponse>(
+                new StartGameRequest(SessionData.SessionKey));
+
+            if (okResponse == null)
+            {
+                MessageBox.Show("Could not start game. You need exactly 2 players to be in the session.", "Error");
+                return;
+            }
+
+            var myMap = GameClientManager.Instance
+                .Client!
+                .SendCommand<GetMapDataRequest, SendMapDataResponse>(
+                new GetMapDataRequest(SessionData.SessionKey, GameClientManager.Instance.PlayerName!));
+
+            if (myMap == null)
+            {
+                MessageBox.Show("Could not get into game. Exiting into session lobby.", "Error");
+
+                Program.SessionForm.ShowWindow();
+                GameClientManager.Instance.LeaveSession();
+
+                return;
+            }
+
+            Program.PlacementForm.ShowWindow(myMap.MapData);
         }
 
         private void ClearData()

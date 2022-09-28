@@ -1,4 +1,5 @@
-﻿using BattleshipsCore.Game.GameGrid;
+﻿using BattleshipsCore.Data;
+using BattleshipsCore.Game.GameGrid;
 
 namespace BattleshipsCore.Game
 {
@@ -42,16 +43,23 @@ namespace BattleshipsCore.Game
             return true;
         }
 
-        public void StartSession()
+        public bool StartSession()
         {
-            Active = true;
-
-            foreach (var player in _players)
+            if (_players.Count == 2 && !Active)
             {
-                var generatedMap = GenerateNewMap();
+                Active = true;
 
-                _playerMaps.Add(player.Key, generatedMap);
+                foreach (var player in _players)
+                {
+                    var generatedMap = GenerateNewMap();
+
+                    _playerMaps.Add(player.Key, generatedMap);
+                }
+
+                return true;
             }
+
+            return false;
         }
 
         public void StopSession()
@@ -67,9 +75,21 @@ namespace BattleshipsCore.Game
             _players.Clear();
         }
 
+        public GameMapData? GetMapFor(string name)
+        {
+            if (!_players.ContainsKey(name)) return null;
+
+            var map = _playerMaps[name];
+
+            return new GameMapData
+            {
+                Grid = map.Grid,
+            };
+        }
+
         private MapGrid GenerateNewMap()
         {
-            return new MapGrid(new(10, 10));
+            return new MapGrid(new(15, 15));
         }
     }
 }

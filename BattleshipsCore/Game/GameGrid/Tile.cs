@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace BattleshipsCore.Game.GameGrid
 {
-    internal class Tile
+    public struct Tile
     {
+        [JsonPropertyName("t")]
         public TileType Type { get; init; }
-        public Vec2 Position { get; init; }
-        public object? OccupyingUnit { get; set; }
 
-        public Tile(TileType type, Vec2 pos)
+        public Tile(TileType type)
         {
             Type = type;
-            Position = pos;
         }
     }
 }

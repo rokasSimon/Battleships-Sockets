@@ -10,7 +10,7 @@ namespace BattleshipsCoreClient
     public class AsyncSocketClient
     {
         private const int ListenerPort = 42069;
-        private const int BufferSize = 1024;
+        private const int BufferSize = 4096;
 
         private readonly IPEndPoint _serverEndPoint;
         private readonly SocketStateData _clientSocketData;

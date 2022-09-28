@@ -35,13 +35,14 @@
             this.CreateSessionButton = new System.Windows.Forms.Button();
             this.CreateSessionTextBox = new System.Windows.Forms.TextBox();
             this.CreateSessionLabel = new System.Windows.Forms.Label();
+            this.DisconnectButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.SessionListGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // RefreshButton
             // 
             this.RefreshButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.RefreshButton.Location = new System.Drawing.Point(507, 14);
+            this.RefreshButton.Location = new System.Drawing.Point(444, 14);
             this.RefreshButton.Name = "RefreshButton";
             this.RefreshButton.Size = new System.Drawing.Size(113, 30);
             this.RefreshButton.TabIndex = 0;
@@ -65,7 +66,7 @@
             this.SessionListGrid.MultiSelect = false;
             this.SessionListGrid.Name = "SessionListGrid";
             this.SessionListGrid.RowTemplate.Height = 25;
-            this.SessionListGrid.Size = new System.Drawing.Size(608, 399);
+            this.SessionListGrid.Size = new System.Drawing.Size(545, 384);
             this.SessionListGrid.TabIndex = 1;
             this.SessionListGrid.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.SessionRow_Click);
             // 
@@ -82,7 +83,7 @@
             // CreateSessionButton
             // 
             this.CreateSessionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CreateSessionButton.Location = new System.Drawing.Point(502, 463);
+            this.CreateSessionButton.Location = new System.Drawing.Point(439, 448);
             this.CreateSessionButton.Name = "CreateSessionButton";
             this.CreateSessionButton.Size = new System.Drawing.Size(118, 23);
             this.CreateSessionButton.TabIndex = 2;
@@ -93,7 +94,7 @@
             // CreateSessionTextBox
             // 
             this.CreateSessionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CreateSessionTextBox.Location = new System.Drawing.Point(396, 463);
+            this.CreateSessionTextBox.Location = new System.Drawing.Point(333, 448);
             this.CreateSessionTextBox.Name = "CreateSessionTextBox";
             this.CreateSessionTextBox.Size = new System.Drawing.Size(100, 23);
             this.CreateSessionTextBox.TabIndex = 3;
@@ -102,17 +103,28 @@
             // 
             this.CreateSessionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CreateSessionLabel.AutoSize = true;
-            this.CreateSessionLabel.Location = new System.Drawing.Point(306, 467);
+            this.CreateSessionLabel.Location = new System.Drawing.Point(243, 452);
             this.CreateSessionLabel.Name = "CreateSessionLabel";
             this.CreateSessionLabel.Size = new System.Drawing.Size(84, 15);
             this.CreateSessionLabel.TabIndex = 4;
             this.CreateSessionLabel.Text = "Session Name:";
             // 
+            // DisconnectButton
+            // 
+            this.DisconnectButton.Location = new System.Drawing.Point(12, 12);
+            this.DisconnectButton.Name = "DisconnectButton";
+            this.DisconnectButton.Size = new System.Drawing.Size(88, 30);
+            this.DisconnectButton.TabIndex = 5;
+            this.DisconnectButton.Text = "Disconnect";
+            this.DisconnectButton.UseVisualStyleBackColor = true;
+            this.DisconnectButton.Click += new System.EventHandler(this.DisconnectButton_Click);
+            // 
             // SessionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(632, 500);
+            this.ClientSize = new System.Drawing.Size(569, 485);
+            this.Controls.Add(this.DisconnectButton);
             this.Controls.Add(this.CreateSessionLabel);
             this.Controls.Add(this.CreateSessionTextBox);
             this.Controls.Add(this.CreateSessionButton);
@@ -135,5 +147,6 @@
         private Button CreateSessionButton;
         private TextBox CreateSessionTextBox;
         private Label CreateSessionLabel;
+        private Button DisconnectButton;
     }
 }

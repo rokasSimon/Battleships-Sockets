@@ -1,13 +1,13 @@
+#nullable disable
+
 namespace BattleshipsCoreClient
 {
     internal static class Program
     {
-        public static volatile bool isThreadRunning = false;
-
         public static Start ConnectionForm;
         public static SessionForm SessionForm;
         public static ActiveSessionForm ActiveSessionForm;
-        public static object PlacementPanel;
+        public static PlacementForm PlacementForm;
         public static object PlayPanel;
 
         /// <summary>
@@ -25,16 +25,9 @@ namespace BattleshipsCoreClient
             ConnectionForm = new Start();
             SessionForm = new SessionForm();
             ActiveSessionForm = new ActiveSessionForm();
+            PlacementForm = new PlacementForm();
 
             Application.Run(ConnectionForm);
-        }
-
-        public static void ReturnToConnectionPanel()
-        {
-            SessionForm.Hide();
-            ActiveSessionForm.Hide();
-
-            ConnectionForm.Show();
         }
     }
 }

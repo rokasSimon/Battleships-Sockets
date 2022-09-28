@@ -11,6 +11,15 @@ namespace BattleshipsCoreClient
             FormClosed += Start_FormClosed;
         }
 
+        public void ShowWindow()
+        {
+            Program.SessionForm.Hide();
+            Program.ActiveSessionForm.Hide();
+            Program.PlacementForm.Hide();
+
+            Show();
+        }
+
         private void Start_FormClosed(object? sender, FormClosedEventArgs e)
         {
             Application.Exit();
@@ -38,8 +47,7 @@ namespace BattleshipsCoreClient
 
                         if (success)
                         {
-                            Program.SessionForm.Show();
-                            Hide();
+                            Program.SessionForm.ShowWindow();
                         }
                         else
                         {
