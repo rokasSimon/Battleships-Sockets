@@ -111,7 +111,9 @@ namespace BattleshipsCore.Server
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Caught exception: ({e})");
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
 

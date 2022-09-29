@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleshipsCore", "BattleshipsCore\BattleshipsCore.csproj", "{25E31126-7781-4FCB-808B-C5949AF4C9E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BattleshipsCore", "BattleshipsCore\BattleshipsCore.csproj", "{25E31126-7781-4FCB-808B-C5949AF4C9E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BattleshipsCoreClient", "BattleshipsCoreClient\BattleshipsCoreClient.csproj", "{627CC7F7-080E-4F17-A1F2-A139BB42A2FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BattleshipsCoreClient", "BattleshipsCoreClient\BattleshipsCoreClient.csproj", "{627CC7F7-080E-4F17-A1F2-A139BB42A2FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

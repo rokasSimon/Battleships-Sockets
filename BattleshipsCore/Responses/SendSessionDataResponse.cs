@@ -2,6 +2,8 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 
+#nullable disable
+
 namespace BattleshipsCore.Responses
 {
     public class SendSessionDataResponse : Message

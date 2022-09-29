@@ -5,8 +5,9 @@
         Water = 0,
         Ground = 1,
         Ship = 2,
-        Hit = 3,
-        Unavailable = 4,
-        Destroyed = 5,
+        Miss = 3,
+        Hit = 4,
+        Unavailable = 5,
+        Destroyed = 6,
     }
 }

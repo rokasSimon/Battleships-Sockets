@@ -1,11 +1,11 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace BattleshipsCore.Game.GameGrid
 {
     public struct Tile
     {
-        [JsonPropertyName("t")]
-        public TileType Type { get; init; }
+        [JsonProperty("t")]
+        public TileType Type { get; set; }
 
         public Tile(TileType type)
         {

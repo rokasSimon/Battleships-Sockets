@@ -1,6 +1,8 @@
 ﻿using BattleshipsCore.Data;
+using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Requests;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
 
@@ -8,13 +10,16 @@ namespace BattleshipsCoreClient
 {
     public partial class PlacementForm : Form
     {
-        private GameMapData? MapData { get; set; }
-        private Vec2 GridSize => new Vec2(MapData!.Grid.GetLength(1), MapData.Grid.GetLength(0));
+        private GameMapData? OriginalMapData { get; set; }
+        private Tile[,]? CurrentGrid { get; set; } 
+        private Vec2 GridSize => new(CurrentGrid!.GetLength(1), CurrentGrid!.GetLength(0));
 
         private PlaceableObjectButton? SelectedPlaceableObject { get; set; }
         private Dictionary<Guid, PlaceableObjectButton> PlaceableObjectButtons { get; set; }
         private List<SelectedObject> SelectedTileGroups { get; set; }
         private List<Vec2> HoveredButtonPositions { get; set; }
+
+        private bool InputDisabled { get; set; }
 
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
@@ -26,6 +31,7 @@ namespace BattleshipsCoreClient
 
         public PlacementForm()
         {
+            InputDisabled = false;
             HoveredButtonPositions = new List<Vec2>();
             SelectedTileGroups = new List<SelectedObject>();
             PlaceableObjectButtons = new Dictionary<Guid, PlaceableObjectButton>();
@@ -40,6 +46,7 @@ namespace BattleshipsCoreClient
                 button.Name = buttonId.ToString();
                 button.AutoSize = true;
                 button.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                button.BackColor = Color.White;
 
                 button.Click += PlaceableObjectButton_Click;
 
@@ -59,16 +66,26 @@ namespace BattleshipsCoreClient
         {
             Program.ActiveSessionForm.Hide();
 
-            MapData = mapData;
+            OriginalMapData = mapData;
 
             InitializeGrid();
             Show();
         }
 
+        public void UpdateTile(TileUpdate update)
+        {
+            var tiles = new List<Vec2> { update.TilePosition };
+
+            SetTiles(tiles, update.NewType);
+            ColorTiles(tiles, update.NewType.ToColor());
+        }
+
         private void InitializeGrid()
         {
-            var rows = MapData!.Grid.GetLength(0);
-            var columns = MapData!.Grid.GetLength(1);
+            CurrentGrid = OriginalMapData!.Grid;
+
+            var rows = CurrentGrid.GetLength(0);
+            var columns = CurrentGrid.GetLength(1);
 
             TileGrid.ColumnCount = columns;
             TileGrid.RowCount = rows;
@@ -91,13 +108,14 @@ namespace BattleshipsCoreClient
             {
                 for (int j = 0; j < columns; j++)
                 {
-                    var tile = MapData.Grid[i, j];
+                    var tile = CurrentGrid[i, j];
                     var button = new Button();
 
                     button.Name = $"{i}_{j}";
                     button.BackColor = tile.Type.ToColor();
                     button.Dock = DockStyle.Fill;
                     button.Padding = new Padding(0);
+                    button.Margin = new Padding(0);
 
                     button.MouseHover += Button_MouseHover;
                     button.Click += Button_Click;
@@ -110,6 +128,8 @@ namespace BattleshipsCoreClient
 
         private void Button_MouseDoubleClick(object? sender, MouseEventArgs e)
         {
+            if (InputDisabled) return;
+
             var button = (Button)sender!;
             var coordinates = button!.Name.Split('_');
 
@@ -135,17 +155,25 @@ namespace BattleshipsCoreClient
 
         private void PlaceableObjectButton_Click(object? sender, EventArgs e)
         {
+            if (InputDisabled) return;
+
             var button = (Button)sender!;
             var buttonId = Guid.Parse(button.Name);
 
+            if (SelectedPlaceableObject != null)
+            {
+                SelectedPlaceableObject.Button.BackColor = Color.White;
+            }
+
             var placeableObjectButton = PlaceableObjectButtons[buttonId];
+            placeableObjectButton.Button.BackColor = Color.LightGray;
 
             SelectedPlaceableObject = placeableObjectButton;
         }
 
         private void Button_MouseHover(object? sender, EventArgs e)
         {
-            if (SelectedPlaceableObject == null) return;
+            if (InputDisabled || SelectedPlaceableObject == null) return;
 
             if (HoveredButtonPositions.Count != 0)
             {
@@ -160,7 +188,7 @@ namespace BattleshipsCoreClient
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
 
-            if (SelectedPlaceableObject.PlaceableObject.IsPlaceable(MapData!.Grid, pos))
+            if (SelectedPlaceableObject.PlaceableObject.IsPlaceable(CurrentGrid, pos))
             {
                 HoveredButtonPositions = SelectedPlaceableObject.PlaceableObject.HoverTiles(GridSize, pos);
                 ColorTiles(HoveredButtonPositions, Color.LightGray);
@@ -169,11 +197,13 @@ namespace BattleshipsCoreClient
 
         private void Button_Click(object? sender, EventArgs e)
         {
-            if (SelectedPlaceableObject == null) return;
+            if (InputDisabled || SelectedPlaceableObject == null) return;
 
-            HoveredButtonPositions.Clear();
             var placeableObjectButton = SelectedPlaceableObject;
             if (placeableObjectButton.LeftCount < 1) return;
+
+            RestoreTileColor(HoveredButtonPositions);
+            HoveredButtonPositions.Clear();
 
             var button = (Button)sender!;
             var coordinates = button!.Name.Split('_');
@@ -182,11 +212,12 @@ namespace BattleshipsCoreClient
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
 
-            if (placeableObjectButton.PlaceableObject.IsPlaceable(MapData!.Grid, pos))
+            if (placeableObjectButton.PlaceableObject.IsPlaceable(CurrentGrid!, pos))
             {
                 var selectedTiles = placeableObjectButton.PlaceableObject.HoverTiles(GridSize, pos);
 
                 ColorTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type.ToColor());
+                SetTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type);
 
                 SelectedTileGroups.Add(new SelectedObject(placeableObjectButton, selectedTiles));
                 UpdatePlaceableObjectButtonCount(placeableObjectButton, -1);
@@ -202,14 +233,53 @@ namespace BattleshipsCoreClient
             Program.SessionForm.ShowWindow();
         }
 
-        private void PlayButton_Click(object sender, EventArgs e)
+        private async void PlayButton_Click(object sender, EventArgs e)
         {
+            if (InputDisabled) return;
 
+            //var startBattleResponse = GameClientManager.Instance
+            //    .Client!
+            //    .SendCommand<StartBattleRequest, OkResponse>(
+            //    new StartBattleRequest(GameClientManager.Instance.PlayerName!));
+
+            var startBattleResponse = await GameClientManager.Instance
+                .Client!
+                .SendCommandAsync<StartBattleRequest, OkResponse>(
+                new StartBattleRequest(GameClientManager.Instance.PlayerName!));
+
+            if (startBattleResponse == null)
+            {
+                MessageBox.Show("Other player has not finished setting up.");
+                return;
+            }
+
+            InputDisabled = true;
+            await Program.ShootingForm.ShowWindow();
+        }
+
+        private void SaveTileButton_Click(object sender, EventArgs e)
+        {
+            if (InputDisabled || SelectedTileGroups.Count == 0) return;
+
+            var setTilesResponse = GameClientManager.Instance
+                .Client!
+                .SendCommand<SetTilesRequest, OkResponse>(
+                new SetTilesRequest(GameClientManager.Instance.PlayerName!,
+                        SelectedTileGroups.Select(x =>
+                        {
+                            return new PlacedObject(x.ButtonData.PlaceableObject, x.Tiles);
+                        }).ToList()));
+
+            if (setTilesResponse == null)
+            {
+                MessageBox.Show("Could not save tiles.", "Error");
+                return;
+            }
         }
 
         private void RotateButton_Click(object sender, EventArgs e)
         {
-            if (SelectedPlaceableObject == null) return;
+            if (InputDisabled || SelectedPlaceableObject == null) return;
 
             SelectedPlaceableObject.PlaceableObject.Rotate();
         }
@@ -230,9 +300,17 @@ namespace BattleshipsCoreClient
             {
                 var selBut = TileGrid.GetControlFromPosition(item.Y, item.X);
 
-                var originalColor = MapData!.Grid[item.X, item.Y].Type.ToColor();
+                var originalColor = OriginalMapData!.Grid[item.X, item.Y].Type.ToColor();
 
                 selBut.BackColor = originalColor;
+            }
+        }
+
+        private void SetTiles(List<Vec2> tiles, TileType newType)
+        {
+            foreach (var tile in tiles)
+            {
+                CurrentGrid![tile.X, tile.Y].Type = newType;
             }
         }
 
@@ -244,7 +322,9 @@ namespace BattleshipsCoreClient
 
         private void ClearData()
         {
-            MapData = null;
+            InputDisabled = false;
+            CurrentGrid = null;
+            OriginalMapData = null;
             SelectedPlaceableObject = null;
             PlaceableObjectButtons.Clear();
             SelectedTileGroups.Clear();

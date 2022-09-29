@@ -50,7 +50,7 @@
             this.RefreshSessionButton.Name = "RefreshSessionButton";
             this.RefreshSessionButton.Size = new System.Drawing.Size(175, 27);
             this.RefreshSessionButton.TabIndex = 2;
-            this.RefreshSessionButton.Text = "Refresh Player List";
+            this.RefreshSessionButton.Text = "Refresh";
             this.RefreshSessionButton.UseVisualStyleBackColor = true;
             this.RefreshSessionButton.Click += new System.EventHandler(this.RefreshSessionButton_Click);
             // 

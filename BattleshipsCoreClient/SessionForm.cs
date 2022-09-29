@@ -21,6 +21,7 @@ namespace BattleshipsCoreClient
             Program.ConnectionForm.Hide();
             Program.ActiveSessionForm.Hide();
             Program.PlacementForm.Hide();
+            Program.ShootingForm.Hide();
 
             RefreshSessions();
             Show();

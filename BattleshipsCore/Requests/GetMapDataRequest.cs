@@ -27,7 +27,7 @@ namespace BattleshipsCore.Requests
 
             if (map == null) return new FailResponse();
 
-            return new SendMapDataResponse { MapData = map };
+            return new SendMapDataResponse(map);
         }
     }
 }

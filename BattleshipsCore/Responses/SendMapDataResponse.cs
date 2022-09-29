@@ -8,5 +8,10 @@ namespace BattleshipsCore.Responses
     {
         public override MessageType Type => MessageType.SendMapData;
         public GameMapData MapData { get; set; }
+
+        public SendMapDataResponse(GameMapData mapData)
+        {
+            MapData = mapData;
+        }
     }
 }

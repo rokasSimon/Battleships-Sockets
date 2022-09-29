@@ -33,6 +33,7 @@
             this.PlayButton = new System.Windows.Forms.Button();
             this.PlaceableObjectPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.RotateButton = new System.Windows.Forms.Button();
+            this.SaveTileButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // TileGrid
@@ -95,11 +96,23 @@
             this.RotateButton.UseVisualStyleBackColor = true;
             this.RotateButton.Click += new System.EventHandler(this.RotateButton_Click);
             // 
+            // SaveTileButton
+            // 
+            this.SaveTileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SaveTileButton.Location = new System.Drawing.Point(433, 399);
+            this.SaveTileButton.Name = "SaveTileButton";
+            this.SaveTileButton.Size = new System.Drawing.Size(92, 27);
+            this.SaveTileButton.TabIndex = 5;
+            this.SaveTileButton.Text = "Save Tiles";
+            this.SaveTileButton.UseVisualStyleBackColor = true;
+            this.SaveTileButton.Click += new System.EventHandler(this.SaveTileButton_Click);
+            // 
             // PlacementForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(537, 473);
+            this.Controls.Add(this.SaveTileButton);
             this.Controls.Add(this.RotateButton);
             this.Controls.Add(this.PlaceableObjectPanel);
             this.Controls.Add(this.PlayButton);
@@ -118,5 +131,6 @@
         private Button PlayButton;
         private FlowLayoutPanel PlaceableObjectPanel;
         private Button RotateButton;
+        private Button SaveTileButton;
     }
 }

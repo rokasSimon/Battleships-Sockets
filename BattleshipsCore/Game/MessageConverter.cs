@@ -1,4 +1,7 @@
-﻿using BattleshipsCore.Interfaces;
+﻿using BattleshipsCore.Data;
+using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Interfaces;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCore.Server;
@@ -23,7 +26,7 @@ namespace BattleshipsCore.Game
         {
             var contract = base.CreateObjectContract(objectType);
 
-            contract.ItemRequired = Required.Always;
+            contract.ItemRequired = Required.AllowNull;
 
             return contract;
         }
@@ -42,7 +45,7 @@ namespace BattleshipsCore.Game
         {
             var contract = base.CreateObjectContract(objectType);
 
-            contract.ItemRequired = Required.Always;
+            contract.ItemRequired = Required.AllowNull;
 
             return contract;
         }
@@ -69,17 +72,19 @@ namespace BattleshipsCore.Game
             {
                 MessageType.Ok => ToMessage<OkResponse>(jo),
                 MessageType.Fail => ToMessage<FailResponse>(jo),
-
-                MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
-                MessageType.GetSessionList => ToCommand<GetSessionListRequest>(jo),
-                MessageType.GetSessionData => ToCommand<GetSessionDataRequest>(jo),
-                MessageType.GetMapData => ToCommand<GetMapDataRequest>(jo),
-
                 MessageType.SendPlayerList => ToMessage<SendPlayerListResponse>(jo),
                 MessageType.SendSessionKey => ToMessage<SendSessionKeyResponse>(jo),
                 MessageType.SendSessionList => ToMessage<SendSessionListResponse>(jo),
                 MessageType.SendSessionData => ToMessage<SendSessionDataResponse>(jo),
                 MessageType.SendMapData => ToMessage<SendMapDataResponse>(jo),
+                MessageType.SendTileUpdate => ToMessage<SendTileUpdateResponse>(jo),
+
+                MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
+                MessageType.GetSessionList => ToCommand<GetSessionListRequest>(jo),
+                MessageType.GetSessionData => ToCommand<GetSessionDataRequest>(jo),
+                MessageType.GetMapData => ToCommand<GetMapDataRequest>(jo),
+                MessageType.GetOpponentMap => ToCommand<GetOpponentMapRequest>(jo),
+                MessageType.GetMyTurn => ToCommand<GetMyTurnRequest>(jo),
 
                 MessageType.JoinServer => ToCommand<JoinServerRequest>(jo),
                 MessageType.Disconnect => ToCommand<DisconnectRequest>(jo),
@@ -89,7 +94,10 @@ namespace BattleshipsCore.Game
                 MessageType.CreateSession => ToCommand<CreateSessionRequest>(jo),
 
                 MessageType.StartGame => ToCommand<StartGameRequest>(jo),
-                
+                MessageType.StartBattle => ToCommand<StartBattleRequest>(jo),
+
+                MessageType.SetTiles => HandleSetTiles(jo),
+                MessageType.Shoot => ToCommand<ShootRequest>(jo),
 
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
             };
@@ -107,14 +115,33 @@ namespace BattleshipsCore.Game
 
         private TMessage ToMessage<TMessage>(JObject val) where TMessage : Message
         {
-            var message = JsonConvert.DeserializeObject<TMessage>(val.ToString(), ResponseConverterSettings);
-
-            return message;
+            return JsonConvert.DeserializeObject<TMessage>(val.ToString(), ResponseConverterSettings);
         }
 
         private TCommand ToCommand<TCommand>(JObject val) where TCommand : Request
         {
             return JsonConvert.DeserializeObject<TCommand>(val.ToString(), RequestConverterSettings);
+        }
+
+        // Should look for a better solution, this is an exception
+        private SetTilesRequest HandleSetTiles(JObject val)
+        {
+            var playerName = val.Value<string>("PlayerName");
+            var placeableObjects = new List<PlacedObject>();
+
+            foreach (var item in val["PlacedObjects"])
+            {
+                var tiles = JsonConvert.DeserializeObject<List<Vec2>>(item["Tiles"].ToString());
+
+                var objVal = item["Obj"];
+                var obj = new Ship(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
+
+                placeableObjects.Add(new PlacedObject(obj, tiles));
+            }
+
+            var request = new SetTilesRequest(playerName, placeableObjects);
+
+            return request;
         }
     }
 }

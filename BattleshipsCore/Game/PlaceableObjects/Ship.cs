@@ -1,9 +1,11 @@
 ﻿using BattleshipsCore.Game.GameGrid;
+using Newtonsoft.Json;
 
 namespace BattleshipsCore.Game.PlaceableObjects
 {
     public class Ship : PlaceableObject
     {
+        [JsonProperty("t")]
         public override TileType Type => TileType.Ship;
 
         public int Length { get; init; }

@@ -23,6 +23,8 @@ namespace BattleshipsCoreClient
         {
             Program.ConnectionForm.Hide();
             Program.SessionForm.Hide();
+            Program.PlacementForm.Hide();
+            Program.ShootingForm.Hide();
 
             ClearData();
             UpdateSessionData(sessionData);
@@ -82,6 +84,11 @@ namespace BattleshipsCoreClient
             }
 
             UpdateSessionData(SessionData);
+
+            if (SessionData.Active)
+            {
+                StartGame();
+            }
         }
 
         private void StartGameButton_Click(object sender, EventArgs e)
@@ -105,10 +112,15 @@ namespace BattleshipsCoreClient
                 return;
             }
 
+            StartGame();
+        }
+
+        private void StartGame()
+        {
             var myMap = GameClientManager.Instance
                 .Client!
                 .SendCommand<GetMapDataRequest, SendMapDataResponse>(
-                new GetMapDataRequest(SessionData.SessionKey, GameClientManager.Instance.PlayerName!));
+                new GetMapDataRequest(SessionData!.SessionKey, GameClientManager.Instance.PlayerName!));
 
             if (myMap == null)
             {

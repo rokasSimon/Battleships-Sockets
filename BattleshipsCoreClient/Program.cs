@@ -8,7 +8,7 @@ namespace BattleshipsCoreClient
         public static SessionForm SessionForm;
         public static ActiveSessionForm ActiveSessionForm;
         public static PlacementForm PlacementForm;
-        public static object PlayPanel;
+        public static ShootingForm ShootingForm;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -26,6 +26,7 @@ namespace BattleshipsCoreClient
             SessionForm = new SessionForm();
             ActiveSessionForm = new ActiveSessionForm();
             PlacementForm = new PlacementForm();
+            ShootingForm = new ShootingForm();
 
             Application.Run(ConnectionForm);
         }

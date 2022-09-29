@@ -17,6 +17,7 @@
         SendSessionList = 12,
         SendSessionData = 13,
         SendMapData = 14,
+        SendTileUpdate = 15,
 
         CreateSession = 20,
 
@@ -24,7 +25,13 @@
         GetSessionData = 31,
         GetPlayerList = 32,
         GetMapData = 33,
+        GetOpponentMap = 34,
+        GetMyTurn = 35,
 
         StartGame = 50,
+        StartBattle = 51,
+
+        SetTiles = 61,
+        Shoot = 62,
     }
 }
