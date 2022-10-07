@@ -2,6 +2,8 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Game.PlaceableObjects.Ship;
+using BattleshipsCore.Game.PlaceableObjects.Tank;
 using BattleshipsCore.Requests;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
@@ -23,10 +25,14 @@ namespace BattleshipsCoreClient
 
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
-            new Ship("One Tile Ship", 3, 1),
-            new Ship("Two Tile Ship", 2, 2),
-            new Ship("Three Tile Ship", 1, 3),
-            new Ship("Four Tile Ship", 1, 4),
+            
+           new Ship("small",3,1 ),
+           new Ship("medium", 2,2),
+           new Ship("large", 1,2 )
+           //new Tank("small",3 ),
+           // Tank("medium", 2),
+           // Tank("large", 1 )
+
         };
 
         public PlacementForm()

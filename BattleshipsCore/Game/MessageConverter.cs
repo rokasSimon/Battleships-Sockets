@@ -1,6 +1,7 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
-using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Game.PlaceableObjects.Ship;
+using BattleshipsCore.Game.PlaceableObjects.Tank;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
@@ -134,9 +135,13 @@ namespace BattleshipsCore.Game
                 var tiles = JsonConvert.DeserializeObject<List<Vec2>>(item["Tiles"].ToString());
 
                 var objVal = item["Obj"];
-                var obj = new Ship(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
 
-                placeableObjects.Add(new PlacedObject(obj, tiles));
+                var obj = new Ship(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
+                var obj2 = obj.GetShip(obj.Name);
+                //sutvarkyta su ship
+                //tik nezinojau kiap prijungti tank (nurodyti kad reikia dar ir tanku, pakeisti tanku spalva ir pakeisti spalva pataikius i tanka)
+
+                placeableObjects.Add(new PlacedObject(obj2, tiles));
             }
 
             var request = new SetTilesRequest(playerName, placeableObjects);
