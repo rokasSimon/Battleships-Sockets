@@ -1,7 +1,8 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects.Ship;
-using BattleshipsCore.Game.PlaceableObjects.Tank;
+
+
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;

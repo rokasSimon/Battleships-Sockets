@@ -26,12 +26,12 @@ namespace BattleshipsCoreClient
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
             
-           new Ship("small",3,1 ),
-           new Ship("medium", 2,2),
-           new Ship("large", 1,2 )
-           //new Tank("small",3 ),
-           // Tank("medium", 2),
-           // Tank("large", 1 )
+           (PlaceableObject)new Ship("small",3,1 ),
+           (PlaceableObject)new Ship("medium", 2,2),
+           (PlaceableObject)new Ship("large", 1,2 ),
+           (PlaceableObject)new Tank("small",3 ,1),
+           (PlaceableObject)new Tank("medium", 2,2),
+           (PlaceableObject)new  Tank("large", 1,3 )
 
         };
 
