@@ -23,10 +23,14 @@ namespace BattleshipsCoreClient
 
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
-            new Ship("One Tile Ship", 3, 1),
-            new Ship("Two Tile Ship", 2, 2),
-            new Ship("Three Tile Ship", 1, 3),
-            new Ship("Four Tile Ship", 1, 4),
+            
+           (PlaceableObject)new Ship("small",3,1 ),
+           (PlaceableObject)new Ship("medium", 2,2),
+           (PlaceableObject)new Ship("large", 1,2 ),
+           (PlaceableObject)new Tank("small",3 ,1),
+           (PlaceableObject)new Tank("medium", 2,2),
+           (PlaceableObject)new  Tank("large", 1,3 )
+
         };
 
         public PlacementForm()
