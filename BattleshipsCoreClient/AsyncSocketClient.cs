@@ -4,10 +4,14 @@ using System.Text;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Game;
 using BattleshipsCore.Server;
+using System;
+using BattleshipsCore.Responses;
+using System.Windows.Forms;
+using BattleshipsCore.Game.SessionObserver;
 
 namespace BattleshipsCoreClient
 {
-    public class AsyncSocketClient
+    public class AsyncSocketClient : SessionSubject
     {
         private const int ListenerPort = 42069;
         private const int BufferSize = 4096;
@@ -23,8 +27,10 @@ namespace BattleshipsCoreClient
             _serverEndPoint = new IPEndPoint(ipAddress, ListenerPort);
 
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
             _clientSocketData = new SocketStateData(socket);
         }
+
 
         public bool Connect(string name)
         {
@@ -44,10 +50,14 @@ namespace BattleshipsCoreClient
         {
             try
             {
+
+
                 var result = Task.Run(() =>
                 {
                     return SendCommandUnsafe<TRequest, TResponse>(request);
                 }).Result;
+
+
 
                 return result;
             }
@@ -79,9 +89,22 @@ namespace BattleshipsCoreClient
 
             var response = await Send(commandMessage);
 
-            var parsedResponse = _commandFactory.ParseResponse<TResponse>(response!);
 
-            return parsedResponse;
+            // TODO: Handling unexpected response
+            try
+            {
+                while (true && response != "") {
+                    var test = _commandFactory.ParseResponse<NewSessionsAddedResponse>(response!);
+                    Notify();
+                    response =  await ReceiveMessage();
+                }
+            } catch (Newtonsoft.Json.JsonReaderException){
+                Notify();
+                response = await ReceiveMessage();
+            } catch (Exception) { }
+
+
+            return _commandFactory.ParseResponse<TResponse>(response!);
         }
 
         private async Task<string?> Send(string message)

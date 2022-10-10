@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
+using BattleshipsCore.Game.SessionObserver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,7 +72,7 @@ namespace BattleshipsCoreClient
 
             var sessionData = new GameSessionData { SessionKey = createSessionResponse.SessionKey, SessionName = sessionName, PlayerNames = new List<string> { PlayerName! }, Active = false };
 
-            ActiveSession = sessionData;
+            //ActiveSession = sessionData;
 
             return sessionData;
         }
