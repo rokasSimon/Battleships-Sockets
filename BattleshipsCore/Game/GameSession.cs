@@ -1,6 +1,5 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
-using System.Collections.Generic;
 
 namespace BattleshipsCore.Game
 {
@@ -135,49 +134,44 @@ namespace BattleshipsCore.Game
             return true;
         }
 
-        public (GameState, List<TileUpdate?>) GetTurnFor(string playerName)
+        public (GameState, TileUpdate?) GetTurnFor(string playerName)
         {
             if (_playerMaps.TryGetValue(playerName, out var gameData))
             {
                 return (gameData.GameState, gameData.TileToUpdate);
             }
 
-            return (GameState.Unknown, new List<TileUpdate?>());
+            return (GameState.Unknown, null);
         }
 
-        public (GameState, List<TileUpdate?>) Shoot(string playerName, List<Vec2> positions)
+        public (GameState, TileUpdate?) Shoot(string playerName, Vec2 position)
         {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, new List<TileUpdate?>());
+            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null);
 
             var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, new List<TileUpdate?>());
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, new List<TileUpdate?>());
+            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
+            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
 
             var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, new List<TileUpdate?>());
+            if (opponentMapData == null) return (GameState.Unknown, null);
 
-            var list = new List<TileUpdate?>();
+            if (!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, null);
 
-            foreach (var position in positions) {
-                if(!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, new List<TileUpdate?>());
+            var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
+            var newTileType = shotTile switch
+            {
+                TileType.Ship => TileType.Hit,
+                TileType.Hit => TileType.Hit,
+                _ => TileType.Miss,
+            };
 
-                var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
-                var newTileType = shotTile switch
-                {
-                    TileType.Ship => TileType.Hit,
-                    TileType.Hit => TileType.Hit,
-                    _ => TileType.Miss,
-                };
-
-                if (newTileType == TileType.Hit && shotTile != TileType.Hit)
-                {
-                    opponentMapData.TilesToHit--;
-                }
-
-                opponentMapData.Grid![position.X, position.Y].Type = newTileType;
-                var tileUpdate = new TileUpdate(position, newTileType);
-                list.Add(tileUpdate);
+            if (newTileType == TileType.Hit && shotTile != TileType.Hit)
+            {
+                opponentMapData.TilesToHit--;
             }
+
+            opponentMapData.Grid![position.X, position.Y].Type = newTileType;
+            var tileUpdate = new TileUpdate(position, newTileType);
 
             if (opponentMapData.TilesToHit == 0)
             {
@@ -186,13 +180,12 @@ namespace BattleshipsCore.Game
             }
             else
             {
-             
-                opponentMapData.TileToUpdate = list;
+                opponentMapData.TileToUpdate = tileUpdate;
                 opponentMapData.GameState = GameState.YourTurn;
                 myMap.GameState = GameState.EnemyTurn;
             }
 
-            return (myMap.GameState, list);
+            return (myMap.GameState, tileUpdate);
         }
 
         private PlayerGameState? GetOpponentMapValue(string playerName)
@@ -207,7 +200,7 @@ namespace BattleshipsCore.Game
 
         private PlayerGameState GenerateNewMap()
         {
-            return new PlayerGameState(new(Constants.GridRowCount, Constants.GridColumnCount));
+            return new PlayerGameState(new(15, 15));
         }
 
         private static void CopyGrid(Tile[,] source, Tile[,] destination)

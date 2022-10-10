@@ -10,12 +10,11 @@ namespace BattleshipsCore.Game.GameGrid
 
         public int TilesToHit { get; set; }
         public GameState GameState { get; set; }
-        public List<TileUpdate?> TileToUpdate { get; set; }
+        public TileUpdate? TileToUpdate { get; set; }
 
         public PlayerGameState(Vec2 size)
         {
             TilesToHit = int.MinValue;
-            TileToUpdate = new List<TileUpdate?>();
             GameState = GameState.EnemyTurn;
             Size = size;
             OriginalGrid = new Tile[size.X, size.Y];

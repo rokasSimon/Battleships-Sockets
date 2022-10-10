@@ -1,16 +1,14 @@
 ﻿using BattleshipsCore.Data;
-using BattleshipsCore.Game.SessionObserver;
 using BattleshipsCore.Server;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BattleshipsCore.Game
 {
-    internal class ServerGameStateManager : SessionSubject
+    internal class ServerGameStateManager
     {
         private static readonly object _lock = new();
         private static ServerGameStateManager? _instance;
@@ -45,7 +43,6 @@ namespace BattleshipsCore.Game
             if (_players.ContainsKey(player.Name)) return false;
 
             _players.Add(player.Name, player);
-            Attach(player);
 
             return true;
         }
@@ -100,7 +97,6 @@ namespace BattleshipsCore.Game
             var sessionKey = Guid.NewGuid();
 
             _sessions.Add(sessionKey, session);
-            SessionCount = _sessions.Count;
 
             return sessionKey;
         }

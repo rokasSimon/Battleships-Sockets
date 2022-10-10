@@ -1,11 +1,9 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
-using BattleshipsCore.Game.SessionObserver;
-using System;
 
 namespace BattleshipsCoreClient
 {
-    public partial class SessionForm : Form, ISessionObserver
+    public partial class SessionForm : Form
     {
         public List<GameSessionData> SessionList { get; set; }
 
@@ -27,7 +25,6 @@ namespace BattleshipsCoreClient
 
             RefreshSessions();
             Show();
-            if (GameClientManager.Instance.Client != null) GameClientManager.Instance.Client.Attach(this);
         }
 
         private void SessionForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -68,7 +65,7 @@ namespace BattleshipsCoreClient
                     return;
                 }
 
-               //Program.ActiveSessionForm.ShowWindow(createdSessionData);
+                Program.ActiveSessionForm.ShowWindow(createdSessionData);
             }
         }
 
@@ -107,7 +104,6 @@ namespace BattleshipsCoreClient
                 SessionListGrid.Rows[row].Cells[0].Value = session.SessionName;
                 SessionListGrid.Rows[row].Cells[1].Value = session.PlayerNames.Count;
             }
-
         }
 
         private void JoinSession(GameSessionData session)
@@ -122,11 +118,6 @@ namespace BattleshipsCoreClient
             }
 
             Program.ActiveSessionForm.ShowWindow(session);
-        }
-
-        public void Update(SessionSubject sessionSubject)
-        {
-            MessageBox.Show("New sessions were added" );
         }
     }
 }

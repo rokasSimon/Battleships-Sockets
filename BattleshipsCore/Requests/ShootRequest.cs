@@ -11,11 +11,9 @@ namespace BattleshipsCore.Requests
         public override MessageType Type => MessageType.Shoot;
 
         public string Initiator { get; set; }
-        public List<Vec2> Pos { get; set; }
+        public Vec2 Pos { get; set; }
 
-
-
-        public ShootRequest(string initiator, List<Vec2> pos)
+        public ShootRequest(string initiator, Vec2 pos)
         {
             Initiator = initiator;
             Pos = pos;
