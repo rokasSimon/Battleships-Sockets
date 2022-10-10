@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.ShootingStrategy;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Extensions;
@@ -13,6 +14,8 @@ namespace BattleshipsCoreClient
         private bool InputDisabled { get; set; }
         private bool RefreshLoopActive { get; set; }
 
+        private ShootingStrategy shootingStrategy { get; set; }
+
         public ShootingForm()
         {
             InputDisabled = true;
@@ -21,6 +24,8 @@ namespace BattleshipsCoreClient
             InitializeComponent();
 
             FormClosed += ShootingForm_FormClosed;
+
+            shootingStrategy = new HorizontalLineShooting();
         }
 
         private void ShootingForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -165,9 +170,11 @@ namespace BattleshipsCoreClient
                     else if (isMyTurnResponse.GameState == GameState.Lost) Lose();
                     else if (isMyTurnResponse.GameState == GameState.YourTurn)
                     {
-                        if (isMyTurnResponse.TileUpdate != null)
+                        foreach(var tileUpdate in isMyTurnResponse.TileUpdate)
+
+                        if (tileUpdate != null)
                         {
-                            Program.PlacementForm.UpdateTile(isMyTurnResponse.TileUpdate);
+                            Program.PlacementForm.UpdateTile(tileUpdate);
                         }
 
                         GrantTurn();
@@ -186,24 +193,31 @@ namespace BattleshipsCoreClient
 
         private async Task<bool> Shoot(Vec2 position)
         {
+            var targetPositions = new List<Vec2>();
+            shootingStrategy.targetPositions(targetPositions, position);
+
             var response = await GameClientManager.Instance
                 .Client!
                 .SendCommandAsync<ShootRequest, SendTileUpdateResponse>(
-                new ShootRequest(GameClientManager.Instance.PlayerName!, position));
+                new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
 
             if (response == null) return false;
+            var updated = false;
 
-            if (response.GameState != GameState.Unknown && response.TileUpdate != null)
-            {
-                UpdateTile(response.TileUpdate);
+            foreach (var tileUpdate in response.TileUpdate) {
+                if (response.GameState != GameState.Unknown && tileUpdate != null)
+                {
+                    UpdateTile(tileUpdate);
 
-                if (response.GameState == GameState.Lost) Lose();
-                else if (response.GameState == GameState.Won) Win();
+                    if (response.GameState == GameState.Lost) Lose();
+                    else if (response.GameState == GameState.Won) Win();
 
-                return true;
+                    updated = true;
+                }
             }
 
-            return false;
+         
+            return updated;
         }
 
         private void UpdateTile(TileUpdate update)
@@ -264,6 +278,35 @@ namespace BattleshipsCoreClient
             CurrentGrid = null;
             InputDisabled = true;
             RefreshLoopActive = false;
+        }
+
+        private void TileGrid_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void TileGrid_Paint_1(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void SetSingleTileShootingStrategy(object sender, EventArgs e) {
+            shootingStrategy = new SingleTileShooting();
+        }
+
+        private void SetAreaShootingStrategy(object sender, EventArgs e)
+        {
+            shootingStrategy = new AreaShooting();
+        }
+
+        private void SetHorizontalShootingStrategy(object sender, EventArgs e)
+        {
+            shootingStrategy = new HorizontalLineShooting();
+        }
+
+        private void SetVerticalShootingStrategy(object sender, EventArgs e)
+        {
+            shootingStrategy = new VerticalLineShooting();
         }
     }
 }

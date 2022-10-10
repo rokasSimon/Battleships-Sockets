@@ -33,5 +33,7 @@
 
         SetTiles = 61,
         Shoot = 62,
+
+        NewSessionsAdded = 70,
     }
 }

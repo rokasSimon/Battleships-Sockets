@@ -330,5 +330,10 @@ namespace BattleshipsCoreClient
             SelectedTileGroups.Clear();
             HoveredButtonPositions.Clear();
         }
+
+        private void TileGrid_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
