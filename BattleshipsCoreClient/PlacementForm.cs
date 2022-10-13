@@ -2,6 +2,8 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Game.PlaceableObjects.Ship;
+using BattleshipsCore.Game.PlaceableObjects.Tank;
 using BattleshipsCore.Requests;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
@@ -11,7 +13,7 @@ namespace BattleshipsCoreClient
     public partial class PlacementForm : Form
     {
         private GameMapData? OriginalMapData { get; set; }
-        private Tile[,]? CurrentGrid { get; set; } 
+        private Tile[,]? CurrentGrid { get; set; }
         private Vec2 GridSize => new(CurrentGrid!.GetLength(1), CurrentGrid!.GetLength(0));
 
         private PlaceableObjectButton? SelectedPlaceableObject { get; set; }
@@ -23,14 +25,12 @@ namespace BattleshipsCoreClient
 
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
-            
            (PlaceableObject)new Ship("small",3,1 ),
            (PlaceableObject)new Ship("medium", 2,2),
-           (PlaceableObject)new Ship("large", 1,2 ),
+           (PlaceableObject)new Ship("large", 1,3 ),
            (PlaceableObject)new Tank("small",3 ,1),
            (PlaceableObject)new Tank("medium", 2,2),
            (PlaceableObject)new  Tank("large", 1,3 )
-
         };
 
         public PlacementForm()
@@ -177,6 +177,48 @@ namespace BattleshipsCoreClient
 
         private void Button_MouseHover(object? sender, EventArgs e)
         {
+            var button = (Button)sender!;
+            var coordinates = button!.Name.Split('_');
+
+            int i = int.Parse(coordinates[0]);
+            int j = int.Parse(coordinates[1]);
+            var pos = new Vec2(i, j);
+
+
+            // TODO: visada grazina pirma reik paziuret kame reikalas
+
+            var tileObjList = SelectedTileGroups.Where((obj) => obj.Tiles.Where((tile) => tile.X == i && tile.Y == j).ToList().Count != 0).ToList();
+
+            if (tileObjList.Count != 0)
+            {
+                var tileObj = tileObjList.First();
+                var placeableObj = tileObj.ButtonData.PlaceableObject;
+
+                if (placeableObj.Type == TileType.Ship)
+                {
+                    IShip ship = placeableObj.GetShip(placeableObj.Name);
+
+                    label4.Text = "Type: Ship (" + ship.Name + ")";
+                    label5.Text = "Naval Artillery Count: " + ship.NavalArtillery.ToString();
+                    label1.Text = "Shooting Range: " + ship.ShootingRange.ToString();
+                }
+
+                if (placeableObj.Type == TileType.Tank)
+                {
+                    ITank tank = placeableObj.GetTank(placeableObj.Name);
+
+                    label4.Text = "Type: Tank (" + tank.Name + ")";
+                    label5.Text = "Ground Artillery Count: " + tank.GroundArtillery.ToString();
+                    label1.Text = "Shooting Range: " + tank.ShootingRange.ToString();
+                }
+            }
+            else
+            {
+                label4.Text = "";
+                label5.Text = "";
+                label1.Text = "";
+            }
+
             if (InputDisabled || SelectedPlaceableObject == null) return;
 
             if (HoveredButtonPositions.Count != 0)
@@ -184,13 +226,6 @@ namespace BattleshipsCoreClient
                 RestoreTileColor(HoveredButtonPositions);
                 HoveredButtonPositions.Clear();
             }
-
-            var button = (Button)sender!;
-            var coordinates = button!.Name.Split('_');
-
-            int i = int.Parse(coordinates[0]);
-            int j = int.Parse(coordinates[1]);
-            var pos = new Vec2(i, j);
 
             if (SelectedPlaceableObject.PlaceableObject.IsPlaceable(CurrentGrid, pos))
             {
