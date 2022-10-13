@@ -29,7 +29,13 @@ namespace BattleshipsCore.Game
 
         public bool Join(PlayerData player)
         {
-            if (Active || BattleActive || _players.ContainsKey(player.Name)) return false;
+            if (Active || BattleActive ) return false;
+
+            // TODO: check
+            if(_players.ContainsKey(player.Name)) {
+                player.JoinedSession = this;
+                return true;
+            }
 
             player.JoinedSession = this;
             _players.Add(player.Name, player);
