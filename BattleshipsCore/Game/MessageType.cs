@@ -33,5 +33,8 @@
 
         SetTiles = 61,
         Shoot = 62,
+        SetBomb = 63,
+        DoubleShot = 64,
+        Hide = 65
     }
 }

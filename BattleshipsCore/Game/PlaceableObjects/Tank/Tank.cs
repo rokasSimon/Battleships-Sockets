@@ -94,17 +94,17 @@ namespace BattleshipsCore.Game.PlaceableObjects.Tank
         public override IShip GetShip(string name)
         {
 
-            if (name == "small")
+            if (name == "small ship")
             {
-                return new SmallShip("small", 3, 1);
+                return new SmallShip("small ship", 3, 1);
             }
-            if (name == "medium")
+            if (name == "medium ship")
             {
-                return new MediumShip("medium", 2, 2);
+                return new MediumShip("medium ship", 2, 2);
             }
-            if (name == "large")
+            if (name == "large ship")
             {
-                return new LargeShip("large", 1, 3);
+                return new LargeShip("large ship", 1, 3);
             }
             else
                 return null;
@@ -112,17 +112,17 @@ namespace BattleshipsCore.Game.PlaceableObjects.Tank
 
         public override ITank GetTank(string name)
         {
-            if (name == "small")
+            if (name == "small tank")
             {
-                return new SmallTank("small", 3, 1);
+                return new SmallTank("small tank", 3, 1);
             }
-            if (name == "medium")
+            if (name == "medium tank")
             {
-                return new MediumTank("medium", 2, 2);
+                return new MediumTank("medium tank", 2, 2);
             }
-            if (name == "large")
+            if (name == "large tank")
             {
-                return new LargeTank("large", 1, 3);
+                return new LargeTank("large tank", 1, 3);
             }
             else
                 return null;

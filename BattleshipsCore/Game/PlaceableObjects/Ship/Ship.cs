@@ -88,17 +88,17 @@ namespace BattleshipsCore.Game.PlaceableObjects.Ship
         public override IShip GetShip(string name)
         {
             
-            if (name == "small")
+            if (name == "small ship")
             {
-                return new SmallShip("small",3,1);
+                return new SmallShip("small ship", 3,1);
             }
-            if (name == "medium")
+            if (name == "medium ship")
             {
-                return new MediumShip("medium", 2, 2);
+                return new MediumShip("medium ship", 2, 2);
             }
-            if (name == "large")
+            if (name == "large ship")
             {
-                return new LargeShip("large", 1, 3);
+                return new LargeShip("large ship", 1, 3);
             }
             else
                 return null;

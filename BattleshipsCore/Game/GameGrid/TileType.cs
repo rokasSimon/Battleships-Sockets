@@ -9,6 +9,7 @@
         Hit = 4,
         Unavailable = 5,
         Destroyed = 6,
-        Tank = 7,
+        Tank = 7
+
     }
 }

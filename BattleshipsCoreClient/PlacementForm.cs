@@ -26,14 +26,15 @@ namespace BattleshipsCoreClient
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
             
-           (PlaceableObject)new Ship("small",3,1 ),
-           (PlaceableObject)new Ship("medium", 2,2),
-           (PlaceableObject)new Ship("large", 1,2 ),
-           (PlaceableObject)new Tank("small",3 ,1),
-           (PlaceableObject)new Tank("medium", 2,2),
-           (PlaceableObject)new  Tank("large", 1,3 )
+           (PlaceableObject)new Ship("small ship",3,1 ),
+           (PlaceableObject)new Ship("medium ship", 2,2),
+           (PlaceableObject)new Ship("large ship", 1,2 ),
+           (PlaceableObject)new Tank("small tank",3 ,1),
+           (PlaceableObject)new Tank("medium tank", 2,2),
+           (PlaceableObject)new  Tank("large tank", 1,3 )
 
         };
+        
 
         public PlacementForm()
         {
@@ -335,6 +336,11 @@ namespace BattleshipsCoreClient
             PlaceableObjectButtons.Clear();
             SelectedTileGroups.Clear();
             HoveredButtonPositions.Clear();
+        }
+
+        private void PlaceableObjectPanel_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
