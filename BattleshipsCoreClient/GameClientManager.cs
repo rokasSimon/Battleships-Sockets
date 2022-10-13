@@ -59,7 +59,7 @@ namespace BattleshipsCoreClient
 
             return true;
         }
-
+ 
         public GameSessionData? CreateSession(string sessionName)
         {
             if (Client == null) return null;

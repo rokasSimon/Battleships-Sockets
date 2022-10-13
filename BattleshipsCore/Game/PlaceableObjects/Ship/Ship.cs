@@ -1,6 +1,9 @@
-﻿using BattleshipsCore.Game.GameGrid;
+﻿using BattleshipsCore.Data.ShipBuiilder;
+using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.PlaceableObjects.Ship.ShipBuiilder;
 using BattleshipsCore.Game.PlaceableObjects.Tank;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace BattleshipsCore.Game.PlaceableObjects.Ship
 {
@@ -15,6 +18,8 @@ namespace BattleshipsCore.Game.PlaceableObjects.Ship
         {
             Length = length;
         }
+
+        ShipDirector director = new ShipDirector();
 
         public override List<Vec2> HoverTiles(Vec2 gridSize, Vec2 position)
         {
@@ -90,15 +95,15 @@ namespace BattleshipsCore.Game.PlaceableObjects.Ship
             
             if (name == "small")
             {
-                return new SmallShip("small",3,1);
+                return director.Construct(new SmallShipBuilder());
             }
             if (name == "medium")
             {
-                return new MediumShip("medium", 2, 2);
+                return director.Construct(new MediumShipBuilder());
             }
             if (name == "large")
             {
-                return new LargeShip("large", 1, 3);
+                return director.Construct(new LargeShipBuilder());
             }
             else
                 return null;

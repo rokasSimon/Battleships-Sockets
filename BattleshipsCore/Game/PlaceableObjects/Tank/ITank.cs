@@ -9,6 +9,9 @@ namespace BattleshipsCore.Game.PlaceableObjects.Tank
 {
     public abstract class  ITank :PlaceableObject
     {
+        public int ShootingRange { get; set; }
+        public int GroundArtillery { get; set; }
+
         public override TileType Type => TileType.Tank;
 
         public int Length { get; init; }

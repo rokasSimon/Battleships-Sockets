@@ -10,7 +10,8 @@ namespace BattleshipsCore.Game.PlaceableObjects
 {
     public abstract class IShip : PlaceableObject
     {
-
+        public int ShootingRange { get; set; }
+        public int NavalArtillery { get; set; }
 
         public override TileType Type => TileType.Ship;
 

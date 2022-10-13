@@ -1,6 +1,10 @@
-﻿using BattleshipsCore.Game.GameGrid;
+﻿using BattleshipsCore.Data.ShipBuiilder;
+using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects.Ship;
+using BattleshipsCore.Game.PlaceableObjects.Ship.ShipBuiilder;
+using BattleshipsCore.Game.PlaceableObjects.Tank.TankBuilder;
 using Newtonsoft.Json;
+using System.IO;
 
 
 namespace BattleshipsCore.Game.PlaceableObjects.Tank
@@ -16,6 +20,8 @@ namespace BattleshipsCore.Game.PlaceableObjects.Tank
         public override TileType Type => TileType.Tank; // tank = 7
 
         public int Length { get; init; }
+
+        TankDirector director = new TankDirector();
 
         public Tank (string name, int max, int length) : base(name, max)
         {
@@ -114,15 +120,15 @@ namespace BattleshipsCore.Game.PlaceableObjects.Tank
         {
             if (name == "small")
             {
-                return new SmallTank("small", 3, 1);
+                return director.Construct(new SmallTankBuilder());
             }
             if (name == "medium")
             {
-                return new MediumTank("medium", 2, 2);
+                return director.Construct(new MediumTankBuilder());
             }
             if (name == "large")
             {
-                return new LargeTank("large", 1, 3);
+                return director.Construct(new LargeTankeBuilder());
             }
             else
                 return null;
