@@ -8,10 +8,11 @@ using System;
 using BattleshipsCore.Responses;
 using System.Windows.Forms;
 using BattleshipsCore.Game.SessionObserver;
+using BattleshipsCoreClient.Helpers;
 
 namespace BattleshipsCoreClient
 {
-    public class AsyncSocketClient : SessionSubject
+    public class AsyncSocketClient : SessionFormSubject
     {
         private const int ListenerPort = 42069;
         private const int BufferSize = 4096;

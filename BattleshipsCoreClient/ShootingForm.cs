@@ -25,7 +25,9 @@ namespace BattleshipsCoreClient
 
             FormClosed += ShootingForm_FormClosed;
 
-            shootingStrategy = new HorizontalLineShooting();
+            shootingStrategy = new SingleTileShooting();
+            label1.Text = "Active shooting strategy: ";
+            label2.Text = " - SingleTileShooting";
         }
 
         private void ShootingForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -280,33 +282,27 @@ namespace BattleshipsCoreClient
             RefreshLoopActive = false;
         }
 
-        private void TileGrid_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void TileGrid_Paint_1(object sender, PaintEventArgs e)
-        {
-
-        }
-
         private void SetSingleTileShootingStrategy(object sender, EventArgs e) {
             shootingStrategy = new SingleTileShooting();
+            label2.Text = " - SingleTileShooting";
         }
 
         private void SetAreaShootingStrategy(object sender, EventArgs e)
         {
             shootingStrategy = new AreaShooting();
+            label2.Text = " - AreaShooting";
         }
 
         private void SetHorizontalShootingStrategy(object sender, EventArgs e)
         {
             shootingStrategy = new HorizontalLineShooting();
+            label2.Text = " - HorizontalLineShooting";
         }
 
         private void SetVerticalShootingStrategy(object sender, EventArgs e)
         {
             shootingStrategy = new VerticalLineShooting();
+            label2.Text = " - VerticalLineShooting";
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.SessionObserver;
+using BattleshipsCoreClient.Helpers;
 using System;
 
 namespace BattleshipsCoreClient
 {
-    public partial class SessionForm : Form, ISessionObserver
+    public partial class SessionForm : Form, ISessionFormObserver
     {
         public List<GameSessionData> SessionList { get; set; }
 
@@ -124,7 +125,7 @@ namespace BattleshipsCoreClient
             Program.ActiveSessionForm.ShowWindow(session);
         }
 
-        public void Update(SessionSubject sessionSubject)
+        public void Update(SessionFormSubject sessionSubject)
         {
             MessageBox.Show("New sessions were added" );
         }
