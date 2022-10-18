@@ -52,7 +52,6 @@
             this.TileGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TileGrid.Size = new System.Drawing.Size(461, 748);
             this.TileGrid.TabIndex = 0;
-            this.TileGrid.Paint += new System.Windows.Forms.PaintEventHandler(this.TileGrid_Paint);
             // 
             // LeaveButton
             // 
