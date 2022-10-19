@@ -244,6 +244,8 @@ namespace BattleshipsCoreClient
         {
             foreach (var tile in tiles)
             {
+                if (CurrentGrid == null) return;
+
                 CurrentGrid![tile.X, tile.Y].Type = newType;
             }
         }
