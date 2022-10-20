@@ -53,14 +53,14 @@
             this.TileGrid.RowCount = 2;
             this.TileGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TileGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.TileGrid.Size = new System.Drawing.Size(684, 662);
+            this.TileGrid.Size = new System.Drawing.Size(617, 616);
             this.TileGrid.TabIndex = 0;
             // 
             // TurnLabel
             // 
             this.TurnLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.TurnLabel.AutoSize = true;
-            this.TurnLabel.Location = new System.Drawing.Point(148, 9);
+            this.TurnLabel.Location = new System.Drawing.Point(111, 9);
             this.TurnLabel.Name = "TurnLabel";
             this.TurnLabel.Size = new System.Drawing.Size(58, 15);
             this.TurnLabel.TabIndex = 1;
@@ -120,15 +120,16 @@
             // 
             // panel1
             // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.button2);
             this.panel1.Controls.Add(this.button4);
             this.panel1.Controls.Add(this.button3);
-            this.panel1.Location = new System.Drawing.Point(720, 36);
+            this.panel1.Location = new System.Drawing.Point(641, 36);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(198, 297);
+            this.panel1.Size = new System.Drawing.Size(203, 306);
             this.panel1.TabIndex = 7;
             // 
             // label2
@@ -144,7 +145,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(930, 637);
+            this.ClientSize = new System.Drawing.Size(856, 664);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.TurnLabel);
             this.Controls.Add(this.TileGrid);

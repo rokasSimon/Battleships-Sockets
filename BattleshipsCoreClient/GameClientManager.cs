@@ -15,10 +15,7 @@ namespace BattleshipsCoreClient
         private static readonly object _lock = new();
         private static GameClientManager? _instance;
 
-        private GameClientManager()
-        {
-
-        }
+        private GameClientManager() { }
 
         public AsyncSocketClient? Client { get; private set; }
         public GameSessionData? ActiveSession { get; private set; }

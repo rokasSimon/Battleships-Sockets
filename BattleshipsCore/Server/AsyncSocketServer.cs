@@ -1,9 +1,9 @@
-﻿using BattleshipsCore.Game;
+﻿using System.Net;
+using System.Text;
+using System.Net.Sockets;
+using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using Newtonsoft.Json;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 
 namespace BattleshipsCore.Server
 {
@@ -15,9 +15,7 @@ namespace BattleshipsCore.Server
         private readonly IPAddress _serverIpAddress;
         private readonly IPEndPoint _serverEndPoint;
         private readonly Socket _serverSocket;
-
         private readonly Dictionary<Guid, SocketStateData> _connectedClients;
-
         private readonly IMessageParser _commandFactory;
 
         public AsyncSocketServer(IPAddress ipAddress, IMessageParser commandParser)

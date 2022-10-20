@@ -3,6 +3,7 @@ using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
 using BattleshipsCore.Requests;
+using BattleshipsCoreClient.Commands;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
 
@@ -10,10 +11,13 @@ namespace BattleshipsCoreClient
 {
     public partial class PlacementForm : Form
     {
+        private const int MaximumRememberedCommands = 10;
+
         private GameMapData? OriginalMapData { get; set; }
         private Tile[,]? CurrentGrid { get; set; } 
         private Vec2 GridSize => new(CurrentGrid!.GetLength(1), CurrentGrid!.GetLength(0));
 
+        private DropoutStack<ICommand> ExecutedCommandStack { get; set; }
         private PlaceableObjectButton? SelectedPlaceableObject { get; set; }
         private Dictionary<Guid, PlaceableObjectButton> PlaceableObjectButtons { get; set; }
         private List<SelectedObject> SelectedTileGroups { get; set; }
@@ -35,6 +39,7 @@ namespace BattleshipsCoreClient
             HoveredButtonPositions = new List<Vec2>();
             SelectedTileGroups = new List<SelectedObject>();
             PlaceableObjectButtons = new Dictionary<Guid, PlaceableObjectButton>();
+            ExecutedCommandStack = new DropoutStack<ICommand>(MaximumRememberedCommands);
             InitializeComponent();
 
             foreach (var item in _placeableObjects)
@@ -183,7 +188,6 @@ namespace BattleshipsCoreClient
 
             var button = (Button)sender!;
             var coordinates = button!.Name.Split('_');
-
             int i = int.Parse(coordinates[0]);
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
@@ -207,20 +211,29 @@ namespace BattleshipsCoreClient
 
             var button = (Button)sender!;
             var coordinates = button!.Name.Split('_');
-
             int i = int.Parse(coordinates[0]);
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
 
             if (placeableObjectButton.PlaceableObject.IsPlaceable(CurrentGrid!, pos))
             {
-                var selectedTiles = placeableObjectButton.PlaceableObject.HoverTiles(GridSize, pos);
+                var placeObjectCommand = new PlaceObjectCommand(
+                    pos,
+                    TileGrid,
+                    SelectedTileGroups,
+                    placeableObjectButton,
+                    CurrentGrid!);
 
-                ColorTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type.ToColor());
-                SetTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type);
+                placeObjectCommand.Execute();
 
-                SelectedTileGroups.Add(new SelectedObject(placeableObjectButton, selectedTiles));
-                UpdatePlaceableObjectButtonCount(placeableObjectButton, -1);
+                ExecutedCommandStack.Push(placeObjectCommand);
+                //var selectedTiles = placeableObjectButton.PlaceableObject.HoverTiles(GridSize, pos);
+
+                //ColorTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type.ToColor());
+                //SetTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type);
+
+                //SelectedTileGroups.Add(new SelectedObject(placeableObjectButton, selectedTiles));
+                //UpdatePlaceableObjectButtonCount(placeableObjectButton, -1);
             }
         }
 
@@ -236,11 +249,6 @@ namespace BattleshipsCoreClient
         private async void PlayButton_Click(object sender, EventArgs e)
         {
             if (InputDisabled) return;
-
-            //var startBattleResponse = GameClientManager.Instance
-            //    .Client!
-            //    .SendCommand<StartBattleRequest, OkResponse>(
-            //    new StartBattleRequest(GameClientManager.Instance.PlayerName!));
 
             var startBattleResponse = await GameClientManager.Instance
                 .Client!
@@ -329,6 +337,14 @@ namespace BattleshipsCoreClient
             PlaceableObjectButtons.Clear();
             SelectedTileGroups.Clear();
             HoveredButtonPositions.Clear();
+        }
+
+        private void UndoButton_Click(object sender, EventArgs e)
+        {
+            var lastCommand = ExecutedCommandStack.Pop();
+            if (lastCommand == null) return;
+
+            lastCommand.Undo();
         }
     }
 }
