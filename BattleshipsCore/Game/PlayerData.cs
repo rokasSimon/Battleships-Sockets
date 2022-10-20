@@ -21,7 +21,7 @@ namespace BattleshipsCore.Game
             var message = new NewSessionsAddedResponse(sessionCount);
             var commandMessage = new GameMessageParser().SerializeMessage(message);
 
-            Console.WriteLine("New sessions (session count: " + sessionCount + ") were added, sending to: \"" + Name + "\"");
+            ServerLogger.Instance.LogInfo("New sessions (session count: " + sessionCount + ") were added, sending to: \"" + Name + "\"");
 
             SocketData.Socket.Send(Encoding.UTF8.GetBytes(commandMessage));
         }

@@ -129,7 +129,7 @@ namespace BattleshipsCoreClient
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                ServerLogger.Instance.LogError(e.Message);
 
                 return null;
             }

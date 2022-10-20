@@ -50,13 +50,9 @@ namespace BattleshipsCore.Server
 
                 _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
             }
-            catch (SocketException e)
+            catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-            }
-            catch (ObjectDisposedException e)
-            {
-                Console.WriteLine(e.Message);
+                ServerLogger.Instance.LogError(e.Message);
             }
         }
 
@@ -69,7 +65,7 @@ namespace BattleshipsCore.Server
                 int bytesReceived = client.Socket.EndReceive(ar);
 
                 var response = Encoding.UTF8.GetString(client.Buffer, 0, bytesReceived);
-                Console.WriteLine($"Received message: '{response}';");
+                ServerLogger.Instance.LogInfo($"Received message: '{response}';");
 
                 var command = _commandFactory.ParseRequest<Request>(response);
                 var responseCommand = command.Execute();
@@ -99,21 +95,19 @@ namespace BattleshipsCore.Server
             }
             catch (JsonSerializationException e)
             {
-                Console.WriteLine(e.Message);
+                ServerLogger.Instance.LogError(e.Message);
 
                 SendFailForCatch(client);
             }
             catch (UnknownMessageException e)
             {
-                Console.WriteLine(e.Message);
+                ServerLogger.Instance.LogError(e.Message);
 
                 SendFailForCatch(client);
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Caught exception: ({e})");
-                Console.ForegroundColor = ConsoleColor.White;
+                ServerLogger.Instance.LogError($"Caught exception: ({e})");
             }
         }
 
@@ -126,7 +120,7 @@ namespace BattleshipsCore.Server
 
         private void Send(string message, SocketStateData socketData)
         {
-            Console.WriteLine($"Sending response of '{message}';");
+            ServerLogger.Instance.LogInfo($"Sending response of '{message}';");
 
             var data = Encoding.UTF8.GetBytes(message);
 
@@ -140,13 +134,9 @@ namespace BattleshipsCore.Server
                 var client = (SocketStateData)ar.AsyncState!;
                 client.Socket.EndSend(ar);
             }
-            catch (SocketException e)
+            catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-            }
-            catch (ObjectDisposedException e)
-            {
-                Console.WriteLine(e.Message);
+                ServerLogger.Instance.LogError(e.Message);
             }
         }
 
@@ -158,7 +148,7 @@ namespace BattleshipsCore.Server
             }
             catch (Exception)
             {
-                Console.WriteLine("Could not respond with error;");
+                ServerLogger.Instance.LogInfo("Could not respond with error;");
             }
         }
 
@@ -172,7 +162,7 @@ namespace BattleshipsCore.Server
                 {
                     client.Value.Socket.Close();
 
-                    Console.WriteLine($"Removing forcefully disconnected client: {client.Key};");
+                    ServerLogger.Instance.LogWarning($"Removing forcefully disconnected client: {client.Key};");
 
                     _connectedClients.Remove(client.Key);
                 }
