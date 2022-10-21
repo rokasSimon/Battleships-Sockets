@@ -1,4 +1,5 @@
 ﻿using BattleshipsCore.Game;
+using BattleshipsCore.Game.GameGrid;
 using Newtonsoft.Json;
 
 namespace BattleshipsCore.Interfaces

@@ -102,7 +102,9 @@ namespace BattleshipsCore.Game
                 {
                     foreach (var tile in obj.Tiles)
                     {
-                        map.Grid[tile.X, tile.Y].Type = obj.Obj.Type;
+                        
+                            map.Grid[tile.X, tile.Y].Type = obj.Obj.Type;
+                        
                     }
                 }
 
@@ -161,6 +163,7 @@ namespace BattleshipsCore.Game
             var newTileType = shotTile switch
             {
                 TileType.Ship => TileType.Hit,
+                TileType.Tank => TileType.Hit,
                 TileType.Hit => TileType.Hit,
                 _ => TileType.Miss,
             };
@@ -183,6 +186,102 @@ namespace BattleshipsCore.Game
                 opponentMapData.TileToUpdate = tileUpdate;
                 opponentMapData.GameState = GameState.YourTurn;
                 myMap.GameState = GameState.EnemyTurn;
+            }
+
+            return (myMap.GameState, tileUpdate);
+        }
+
+       /* public (GameState, TileUpdate[]?) NukeShoot(string playerName, Vec2[] position)
+        {
+            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null);
+
+            var myMap = _playerMaps[playerName];
+            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
+            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
+
+            var opponentMapData = GetOpponentMapValue(playerName);
+            if (opponentMapData == null) return (GameState.Unknown, null);
+            //objects list of tiles update
+            TileUpdate[] tilesUpdate = new TileUpdate[];
+            foreach (var pos in position)
+            {
+                if (!IsInsideGrid(opponentMapData.Size, pos)) return (GameState.Unknown, null);
+
+                var shotTile = opponentMapData.Grid![pos.X, pos.Y].Type;
+                var newTileType = shotTile switch
+                {
+                    TileType.Ship => TileType.Hit,
+                    TileType.Hit => TileType.Hit,
+                    _ => TileType.Miss,
+                };
+
+                if (newTileType == TileType.Hit && shotTile != TileType.Hit)
+                {
+                    opponentMapData.TilesToHit--;
+                }
+
+                opponentMapData.Grid![position.X, position.Y].Type = newTileType;
+                var tileUpdate = new TileUpdate(position, newTileType);
+                tilesUpdate.add(tileUpdate);
+            }
+            if (opponentMapData.TilesToHit == 0)
+            {
+                opponentMapData.GameState = GameState.Lost;
+                myMap.GameState = GameState.Won;
+            }
+            else
+            {
+                opponentMapData.TileToUpdate = tileUpdate;
+                opponentMapData.GameState = GameState.YourTurn;
+                myMap.GameState = GameState.EnemyTurn;
+            }
+            return (myMap.GameState, tilesUpdate);
+        }*/
+
+        public (GameState, TileUpdate?[]) Bomb(string playerName, Vec2[] position)
+        {
+            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null) ;
+
+            var myMap = _playerMaps[playerName];
+            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
+            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
+
+            var opponentMapData = GetOpponentMapValue(playerName);
+            if (opponentMapData == null) return (GameState.Unknown, null);
+            TileUpdate[] tileUpdate = new TileUpdate[position.Length];
+            for (int i=0; i < position.Length; i++)
+            {
+                if (!IsInsideGrid(opponentMapData.Size, position[i])) return (GameState.Unknown, null);
+
+                var shotTile = opponentMapData.Grid![position[i].X, position[i].Y].Type;
+                var newTileType = shotTile switch
+                {
+                    TileType.Ship => TileType.Hit,
+                    TileType.Tank => TileType.Hit,
+                    TileType.Hit => TileType.Hit,
+                    _ => TileType.Miss,
+                };
+
+                if (newTileType == TileType.Hit && shotTile != TileType.Hit)
+                {
+                    opponentMapData.TilesToHit--;
+                }
+
+                opponentMapData.Grid![position[i].X, position[i].Y].Type = newTileType;
+                tileUpdate[i] = new TileUpdate(position[i], newTileType);
+
+                if (opponentMapData.TilesToHit == 0)
+                {
+                    opponentMapData.GameState = GameState.Lost;
+                    myMap.GameState = GameState.Won;
+                }
+                else
+                {
+                    opponentMapData.TileToUpdate = tileUpdate[i];
+                    opponentMapData.GameState = GameState.YourTurn;
+                    myMap.GameState = GameState.EnemyTurn;
+                }
+
             }
 
             return (myMap.GameState, tileUpdate);

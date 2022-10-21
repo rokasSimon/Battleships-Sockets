@@ -15,6 +15,7 @@ namespace BattleshipsCoreClient.Extensions
                 TileType.Miss => Color.DarkGray,
                 TileType.Unavailable => Color.LightGray,
                 TileType.Destroyed => Color.Black,
+             
 
                 _ => Color.LightBlue,
             };

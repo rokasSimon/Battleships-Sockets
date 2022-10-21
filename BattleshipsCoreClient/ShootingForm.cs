@@ -1,8 +1,11 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Requests;
+using BattleshipsCore.Requests.Guns_Requests;
 using BattleshipsCore.Responses;
+using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
+using System.Windows.Forms;
 
 namespace BattleshipsCoreClient
 {
@@ -12,6 +15,9 @@ namespace BattleshipsCoreClient
         private Tile[,]? CurrentGrid { get; set; }
         private bool InputDisabled { get; set; }
         private bool RefreshLoopActive { get; set; }
+
+        private string weapon = "";
+        List<SaveTileState> states = new List<SaveTileState>();
 
         public ShootingForm()
         {
@@ -50,15 +56,20 @@ namespace BattleshipsCoreClient
             TileGrid.Controls.Clear();
             TileGrid.ColumnStyles.Clear();
             TileGrid.RowStyles.Clear();
+            
+            radioButtonShoot.Click += ShootClick;
+            radioButtonDoubleShoot.Click += DoubleShootClick;
+            radioButtonBomb.Click += BombClick;
+
 
             for (int i = 0; i < columns; i++)
             {
-                TileGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / columns));
+                TileGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 80 / columns));
             }
 
             for (int i = 0; i < rows; i++)
             {
-                TileGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / rows));
+                TileGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 80 / rows));
             }
 
             for (int i = 0; i < rows; i++)
@@ -66,6 +77,9 @@ namespace BattleshipsCoreClient
                 for (int j = 0; j < columns; j++)
                 {
                     var tile = CurrentGrid[i, j];
+
+                    
+
                     var button = new Button();
 
                     button.Name = $"{i}_{j}";
@@ -75,6 +89,7 @@ namespace BattleshipsCoreClient
                     button.Margin = new Padding(0);
 
                     button.Click += Button_Click;
+                    button.MouseDown += Button_MouseRightClick;
 
                     TileGrid.Controls.Add(button, j, i);
                 }
@@ -83,6 +98,7 @@ namespace BattleshipsCoreClient
 
         private async void Button_Click(object? sender, EventArgs e)
         {
+            
             if (InputDisabled) return;
 
             var button = (Button)sender!;
@@ -92,18 +108,124 @@ namespace BattleshipsCoreClient
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
 
-            var success = await Shoot(pos);
 
+            bool success = false; 
+
+            if (weapon == "Shoot")
+            {
+                success = await Shoot(pos);
+            }
+            if (weapon == "Double Shoot")
+            {
+                success = await DoubleShoot(pos);
+            }
+            if (weapon == "Bomb")
+            {
+                success = await Bomb(pos);
+            }
             if (success)
             {
                 await TakeAwayTurn();
+                weapon = "";
             }
             else
             {
                 MessageBox.Show("Could not shoot tile.", "Error");
             }
         }
+       
+        private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
+        {
+            //MessageBox.Show("Right click");
+            if (InputDisabled) return;
 
+            var button = (Button)sender!;
+            var coordinates = button!.Name.Split('_');
+
+            int x = int.Parse(coordinates[0]);
+            int y = int.Parse(coordinates[1]);
+            var pos = new Vec2(x, y);
+            SaveTileState shoot = new SaveTileState(x, y, "marked to shoot");
+            SaveTileState shoot2 = new SaveTileState(x, y, "marked to suspect ship");
+            SaveTileState shoot3 = new SaveTileState(x, y, "marked to suspect tank");
+
+
+            if (!states.Any(x => x.x.Equals(x)) && !states.Any(x => x.y.Equals(y)) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Marked to shoot ! ");
+                var specificButton = new MarkedToShoot(button);
+
+                specificButton.Name = $"{y}_{x}";
+
+                specificButton.Click += Button_Click;
+                specificButton.MouseDoubleClick += Button_MouseRightClick;
+                states.Add(shoot);
+            }
+            else if (states.Contains(new SaveTileState(x, y, "marked to shoot")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Marked to suspect ship ! ");
+
+                var specificButtonShip = new SuspectShip(button);
+
+                specificButtonShip.Name = $"{y}_{x}";
+
+                specificButtonShip.Click += Button_Click;
+                specificButtonShip.MouseDoubleClick += Button_MouseRightClick;
+                int index = states.FindIndex(s => s.Equals(shoot));
+
+                if (index != -1)
+                    states[index] = shoot2;
+            }
+            else if (states.Contains(new SaveTileState(x, y, "marked to suspect ship")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Marked to suspect tank ! ");
+
+                var specificButtonTank = new SuspectTank(button);
+
+                specificButtonTank.Name = $"{y}_{x}";
+
+                specificButtonTank.Click += Button_Click;
+                specificButtonTank.MouseDoubleClick += Button_MouseRightClick;
+                int index = states.FindIndex(s => s.Equals(shoot2));
+
+                if (index != -1)
+                    states[index] = shoot3;
+            }
+            else if  (states.Contains(new SaveTileState(x, y, "marked to suspect tank")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Market to shoot ! ");
+
+                var specificButton = new MarkedToShoot(button);
+
+                specificButton.Name = $"{y}_{x}";
+
+                specificButton.Click += Button_Click;
+                specificButton.MouseDoubleClick += Button_MouseRightClick;
+                int index = states.FindIndex(s => s.Equals(shoot3));
+
+                if (index != -1)
+                    states[index] = shoot;
+            }
+        }
+
+        private async void ShootClick(object? sender, EventArgs e)
+        {
+            if (InputDisabled) return;
+
+            weapon = "Shoot";
+        }
+        private async void DoubleShootClick(object? sender, EventArgs e)
+        {
+            if (InputDisabled) return;
+
+            weapon = "Double Shoot";
+        }
+        private async void BombClick(object? sender, EventArgs e)
+        {
+            if (InputDisabled) return;
+
+            weapon = "Bomb";
+        }
         private void GrantTurn()
         {
             const string YourTurnText = "Your Turn";
@@ -154,6 +276,11 @@ namespace BattleshipsCoreClient
                         .SendCommandAsync<GetMyTurnRequest, SendTileUpdateResponse>(
                         new GetMyTurnRequest(GameClientManager.Instance.PlayerName!));
 
+                   /* var isMyTurnResponses = await GameClientManager.Instance
+                        .Client!
+                        .SendCommandAsync<GetMyTurnRequest, SendTilesUpdateResponse>(
+                        new GetMyTurnRequest(GameClientManager.Instance.PlayerName!));*/
+
                     // Should not fail unless something bad happened or calling from wrong context
                     if (isMyTurnResponse == null)
                     {
@@ -180,6 +307,25 @@ namespace BattleshipsCoreClient
                     {
                         QuitGame();
                     }
+                   /* if (isMyTurnResponses.GameState == GameState.Won) Win();
+                    else if (isMyTurnResponses.GameState == GameState.Lost) Lose();
+                    else if (isMyTurnResponses.GameState == GameState.YourTurn)
+                    {
+                        if (isMyTurnResponses.TileUpdate != null)
+                        {
+                            Program.PlacementForm.UpdateTile(isMyTurnResponses.TileUpdate);
+                        }
+
+                        GrantTurn();
+                    }
+                    else if (isMyTurnResponses.GameState == GameState.EnemyTurn)
+                    {
+                        await TakeAwayTurn();
+                    }
+                    else
+                    {
+                        QuitGame();
+                    }*/
                 }
             }
         }
@@ -188,8 +334,8 @@ namespace BattleshipsCoreClient
         {
             var response = await GameClientManager.Instance
                 .Client!
-                .SendCommandAsync<ShootRequest, SendTileUpdateResponse>(
-                new ShootRequest(GameClientManager.Instance.PlayerName!, position));
+                .SendCommandAsync<GunRequest, SendTileUpdateResponse>(
+                new ShootCreatorRequest(GameClientManager.Instance.PlayerName!, position).createGun());
 
             if (response == null) return false;
 
@@ -200,6 +346,70 @@ namespace BattleshipsCoreClient
                 if (response.GameState == GameState.Lost) Lose();
                 else if (response.GameState == GameState.Won) Win();
 
+                return true;
+            }
+
+            return false;
+        }
+        private async Task<bool> Bomb(Vec2 position)
+        {
+            var response = await GameClientManager.Instance
+                .Client!
+                .SendCommandAsync<GunRequest, SendTilesUpdateResponse>(
+                new BombCreatorRequest(GameClientManager.Instance.PlayerName!, position).createGun());
+
+            //grazins masyva
+            SendTilesUpdateResponse res = response;
+
+            if (response == null) return false;
+            if (res.GameState != GameState.Unknown && res.TileUpdate[0] != null)
+            {
+
+                for (int i = 0; i < res.TileUpdate.Length; i++)
+                {
+                    if (res.GameState != GameState.Unknown && res.TileUpdate[i] != null)
+                    {
+
+                        UpdateTile(res.TileUpdate[i]);
+
+                        if (res.GameState == GameState.Lost) Lose();
+                        else if (res.GameState == GameState.Won) Win();
+
+                        
+                    }
+                }
+                return true;
+            }
+
+            return false;
+        }
+        private async Task<bool> DoubleShoot(Vec2 position)
+        {
+            var response = await GameClientManager.Instance
+                .Client!
+                .SendCommandAsync<GunRequest, SendTilesUpdateResponse>(
+                new DoubleShotCreatorRequest(GameClientManager.Instance.PlayerName!, position).createGun());
+
+            //grazins masyva
+            SendTilesUpdateResponse res = response;
+
+            if (response == null) return false;
+            if (res.GameState != GameState.Unknown && res.TileUpdate[0] != null)
+            {
+
+                for (int i = 0; i < res.TileUpdate.Length; i++)
+                {
+                    if (res.GameState != GameState.Unknown && res.TileUpdate[i] != null)
+                    {
+
+                        UpdateTile(res.TileUpdate[i]);
+
+                        if (res.GameState == GameState.Lost) Lose();
+                        else if (res.GameState == GameState.Won) Win();
+
+
+                    }
+                }
                 return true;
             }
 
@@ -264,6 +474,16 @@ namespace BattleshipsCoreClient
             CurrentGrid = null;
             InputDisabled = true;
             RefreshLoopActive = false;
+        }
+
+        private void TileGrid_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void ShootingForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

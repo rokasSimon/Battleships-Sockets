@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects.Tank;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,10 @@ using System.Threading.Tasks;
 
 namespace BattleshipsCore.Game.PlaceableObjects
 {
+    
+    
     public abstract class IShip : PlaceableObject
-    {
+    {[JsonProperty("t")]
 
 
         public override TileType Type => TileType.Ship;

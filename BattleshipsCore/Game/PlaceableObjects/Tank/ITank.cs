@@ -1,4 +1,5 @@
 ﻿using BattleshipsCore.Game.GameGrid;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +8,11 @@ using System.Threading.Tasks;
 
 namespace BattleshipsCore.Game.PlaceableObjects.Tank
 {
-    public abstract class  ITank :PlaceableObject
+    public abstract class ITank : PlaceableObject
     {
+        [JsonProperty("t")]
+
+
         public override TileType Type => TileType.Tank;
 
         public int Length { get; init; }
@@ -86,6 +90,8 @@ namespace BattleshipsCore.Game.PlaceableObjects.Tank
 
             return true;
         }
+
+
     }
-   
+
 }

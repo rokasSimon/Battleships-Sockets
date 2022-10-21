@@ -1,15 +1,17 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.PlaceableObjects;
 using BattleshipsCore.Game.PlaceableObjects.Ship;
-
-
+using BattleshipsCore.Game.PlaceableObjects.Tank;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Requests;
+using BattleshipsCore.Requests.Guns_Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCore.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using System.Security.Cryptography;
 
 #nullable disable
 
@@ -80,6 +82,7 @@ namespace BattleshipsCore.Game
                 MessageType.SendSessionData => ToMessage<SendSessionDataResponse>(jo),
                 MessageType.SendMapData => ToMessage<SendMapDataResponse>(jo),
                 MessageType.SendTileUpdate => ToMessage<SendTileUpdateResponse>(jo),
+                MessageType.SendTilesUpdate => ToMessage<SendTilesUpdateResponse>(jo),
 
                 MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
                 MessageType.GetSessionList => ToCommand<GetSessionListRequest>(jo),
@@ -100,6 +103,8 @@ namespace BattleshipsCore.Game
 
                 MessageType.SetTiles => HandleSetTiles(jo),
                 MessageType.Shoot => ToCommand<ShootRequest>(jo),
+                MessageType.Bomb => ToCommand<BombRequest>(jo),
+                MessageType.DoubleShoot => ToCommand<DoubleShotRequest>(jo),
 
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
             };
@@ -136,13 +141,20 @@ namespace BattleshipsCore.Game
                 var tiles = JsonConvert.DeserializeObject<List<Vec2>>(item["Tiles"].ToString());
 
                 var objVal = item["Obj"];
-
-                var obj = new Ship(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
-                var obj2 = obj.GetShip(obj.Name);
-                //sutvarkyta su ship
-                //tik nezinojau kiap prijungti tank (nurodyti kad reikia dar ir tanku, pakeisti tanku spalva ir pakeisti spalva pataikius i tanka)
-
-                placeableObjects.Add(new PlacedObject(obj2, tiles));
+                var obj = new Tank (objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
+                if (obj.Name.Equals("small ship") | obj.Name.Equals("medium ship") | obj.Name.Equals("large ship"))
+                {
+                    var obd = new Ship(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
+                    var obj2 = obj.GetShip(obd.Name);
+                    placeableObjects.Add(new PlacedObject(obj2, tiles));
+                }
+                else
+                {
+                    var obj2 = obj.GetTank(obj.Name);
+                    placeableObjects.Add(new PlacedObject(obj2, tiles));
+                }
+                
+                
             }
 
             var request = new SetTilesRequest(playerName, placeableObjects);
