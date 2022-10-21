@@ -1,11 +1,10 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.ShootingStrategy;
 using BattleshipsCore.Requests;
-using BattleshipsCore.Requests.Guns_Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
-using System.Windows.Forms;
 
 namespace BattleshipsCoreClient
 {
@@ -16,7 +15,7 @@ namespace BattleshipsCoreClient
         private bool InputDisabled { get; set; }
         private bool RefreshLoopActive { get; set; }
 
-        private string weapon = "";
+        private ShootingStrategy shootingStrategy { get; set; }
         List<SaveTileState> states = new List<SaveTileState>();
 
         public ShootingForm()
@@ -27,6 +26,10 @@ namespace BattleshipsCoreClient
             InitializeComponent();
 
             FormClosed += ShootingForm_FormClosed;
+
+            shootingStrategy = new SingleTileShooting();
+            label1.Text = "Active shooting strategy: ";
+            label2.Text = " - SingleTileShooting";
         }
 
         private void ShootingForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -56,20 +59,15 @@ namespace BattleshipsCoreClient
             TileGrid.Controls.Clear();
             TileGrid.ColumnStyles.Clear();
             TileGrid.RowStyles.Clear();
-            
-            radioButtonShoot.Click += ShootClick;
-            radioButtonDoubleShoot.Click += DoubleShootClick;
-            radioButtonBomb.Click += BombClick;
-
 
             for (int i = 0; i < columns; i++)
             {
-                TileGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 80 / columns));
+                TileGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100 / columns));
             }
 
             for (int i = 0; i < rows; i++)
             {
-                TileGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 80 / rows));
+                TileGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 100 / rows));
             }
 
             for (int i = 0; i < rows; i++)
@@ -77,9 +75,6 @@ namespace BattleshipsCoreClient
                 for (int j = 0; j < columns; j++)
                 {
                     var tile = CurrentGrid[i, j];
-
-                    
-
                     var button = new Button();
 
                     button.Name = $"{i}_{j}";
@@ -98,7 +93,6 @@ namespace BattleshipsCoreClient
 
         private async void Button_Click(object? sender, EventArgs e)
         {
-            
             if (InputDisabled) return;
 
             var button = (Button)sender!;
@@ -108,32 +102,17 @@ namespace BattleshipsCoreClient
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
 
+            var success = await Shoot(pos);
 
-            bool success = false; 
-
-            if (weapon == "Shoot")
-            {
-                success = await Shoot(pos);
-            }
-            if (weapon == "Double Shoot")
-            {
-                success = await DoubleShoot(pos);
-            }
-            if (weapon == "Bomb")
-            {
-                success = await Bomb(pos);
-            }
             if (success)
             {
                 await TakeAwayTurn();
-                weapon = "";
             }
             else
             {
                 MessageBox.Show("Could not shoot tile.", "Error");
             }
         }
-       
         private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
         {
             //MessageBox.Show("Right click");
@@ -191,7 +170,7 @@ namespace BattleshipsCoreClient
                 if (index != -1)
                     states[index] = shoot3;
             }
-            else if  (states.Contains(new SaveTileState(x, y, "marked to suspect tank")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            else if (states.Contains(new SaveTileState(x, y, "marked to suspect tank")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
                 MessageBox.Show("Decorator: Market to shoot ! ");
 
@@ -208,24 +187,6 @@ namespace BattleshipsCoreClient
             }
         }
 
-        private async void ShootClick(object? sender, EventArgs e)
-        {
-            if (InputDisabled) return;
-
-            weapon = "Shoot";
-        }
-        private async void DoubleShootClick(object? sender, EventArgs e)
-        {
-            if (InputDisabled) return;
-
-            weapon = "Double Shoot";
-        }
-        private async void BombClick(object? sender, EventArgs e)
-        {
-            if (InputDisabled) return;
-
-            weapon = "Bomb";
-        }
         private void GrantTurn()
         {
             const string YourTurnText = "Your Turn";
@@ -276,11 +237,6 @@ namespace BattleshipsCoreClient
                         .SendCommandAsync<GetMyTurnRequest, SendTileUpdateResponse>(
                         new GetMyTurnRequest(GameClientManager.Instance.PlayerName!));
 
-                   /* var isMyTurnResponses = await GameClientManager.Instance
-                        .Client!
-                        .SendCommandAsync<GetMyTurnRequest, SendTilesUpdateResponse>(
-                        new GetMyTurnRequest(GameClientManager.Instance.PlayerName!));*/
-
                     // Should not fail unless something bad happened or calling from wrong context
                     if (isMyTurnResponse == null)
                     {
@@ -292,9 +248,11 @@ namespace BattleshipsCoreClient
                     else if (isMyTurnResponse.GameState == GameState.Lost) Lose();
                     else if (isMyTurnResponse.GameState == GameState.YourTurn)
                     {
-                        if (isMyTurnResponse.TileUpdate != null)
+                        foreach(var tileUpdate in isMyTurnResponse.TileUpdate)
+
+                        if (tileUpdate != null)
                         {
-                            Program.PlacementForm.UpdateTile(isMyTurnResponse.TileUpdate);
+                            Program.PlacementForm.UpdateTile(tileUpdate);
                         }
 
                         GrantTurn();
@@ -307,113 +265,37 @@ namespace BattleshipsCoreClient
                     {
                         QuitGame();
                     }
-                   /* if (isMyTurnResponses.GameState == GameState.Won) Win();
-                    else if (isMyTurnResponses.GameState == GameState.Lost) Lose();
-                    else if (isMyTurnResponses.GameState == GameState.YourTurn)
-                    {
-                        if (isMyTurnResponses.TileUpdate != null)
-                        {
-                            Program.PlacementForm.UpdateTile(isMyTurnResponses.TileUpdate);
-                        }
-
-                        GrantTurn();
-                    }
-                    else if (isMyTurnResponses.GameState == GameState.EnemyTurn)
-                    {
-                        await TakeAwayTurn();
-                    }
-                    else
-                    {
-                        QuitGame();
-                    }*/
                 }
             }
         }
 
         private async Task<bool> Shoot(Vec2 position)
         {
+            var targetPositions = new List<Vec2>();
+            shootingStrategy.targetPositions(targetPositions, position);
+
             var response = await GameClientManager.Instance
                 .Client!
-                .SendCommandAsync<GunRequest, SendTileUpdateResponse>(
-                new ShootCreatorRequest(GameClientManager.Instance.PlayerName!, position).createGun());
+                .SendCommandAsync<ShootRequest, SendTileUpdateResponse>(
+                new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
 
             if (response == null) return false;
+            var updated = false;
 
-            if (response.GameState != GameState.Unknown && response.TileUpdate != null)
-            {
-                UpdateTile(response.TileUpdate);
-
-                if (response.GameState == GameState.Lost) Lose();
-                else if (response.GameState == GameState.Won) Win();
-
-                return true;
-            }
-
-            return false;
-        }
-        private async Task<bool> Bomb(Vec2 position)
-        {
-            var response = await GameClientManager.Instance
-                .Client!
-                .SendCommandAsync<GunRequest, SendTilesUpdateResponse>(
-                new BombCreatorRequest(GameClientManager.Instance.PlayerName!, position).createGun());
-
-            //grazins masyva
-            SendTilesUpdateResponse res = response;
-
-            if (response == null) return false;
-            if (res.GameState != GameState.Unknown && res.TileUpdate[0] != null)
-            {
-
-                for (int i = 0; i < res.TileUpdate.Length; i++)
+            foreach (var tileUpdate in response.TileUpdate) {
+                if (response.GameState != GameState.Unknown && tileUpdate != null)
                 {
-                    if (res.GameState != GameState.Unknown && res.TileUpdate[i] != null)
-                    {
+                    UpdateTile(tileUpdate);
 
-                        UpdateTile(res.TileUpdate[i]);
+                    if (response.GameState == GameState.Lost) Lose();
+                    else if (response.GameState == GameState.Won) Win();
 
-                        if (res.GameState == GameState.Lost) Lose();
-                        else if (res.GameState == GameState.Won) Win();
-
-                        
-                    }
+                    updated = true;
                 }
-                return true;
             }
 
-            return false;
-        }
-        private async Task<bool> DoubleShoot(Vec2 position)
-        {
-            var response = await GameClientManager.Instance
-                .Client!
-                .SendCommandAsync<GunRequest, SendTilesUpdateResponse>(
-                new DoubleShotCreatorRequest(GameClientManager.Instance.PlayerName!, position).createGun());
-
-            //grazins masyva
-            SendTilesUpdateResponse res = response;
-
-            if (response == null) return false;
-            if (res.GameState != GameState.Unknown && res.TileUpdate[0] != null)
-            {
-
-                for (int i = 0; i < res.TileUpdate.Length; i++)
-                {
-                    if (res.GameState != GameState.Unknown && res.TileUpdate[i] != null)
-                    {
-
-                        UpdateTile(res.TileUpdate[i]);
-
-                        if (res.GameState == GameState.Lost) Lose();
-                        else if (res.GameState == GameState.Won) Win();
-
-
-                    }
-                }
-                return true;
-            }
-
-            return false;
+         
+            return updated;
         }
 
         private void UpdateTile(TileUpdate update)
@@ -438,6 +320,8 @@ namespace BattleshipsCoreClient
         {
             foreach (var tile in tiles)
             {
+                if (CurrentGrid == null) return;
+
                 CurrentGrid![tile.X, tile.Y].Type = newType;
             }
         }
@@ -476,14 +360,27 @@ namespace BattleshipsCoreClient
             RefreshLoopActive = false;
         }
 
-        private void TileGrid_Paint(object sender, PaintEventArgs e)
-        {
-
+        private void SetSingleTileShootingStrategy(object sender, EventArgs e) {
+            shootingStrategy = new SingleTileShooting();
+            label2.Text = " - SingleTileShooting";
         }
 
-        private void ShootingForm_Load(object sender, EventArgs e)
+        private void SetAreaShootingStrategy(object sender, EventArgs e)
         {
+            shootingStrategy = new AreaShooting();
+            label2.Text = " - AreaShooting";
+        }
 
+        private void SetHorizontalShootingStrategy(object sender, EventArgs e)
+        {
+            shootingStrategy = new HorizontalLineShooting();
+            label2.Text = " - HorizontalLineShooting";
+        }
+
+        private void SetVerticalShootingStrategy(object sender, EventArgs e)
+        {
+            shootingStrategy = new VerticalLineShooting();
+            label2.Text = " - VerticalLineShooting";
         }
     }
 }

@@ -18,7 +18,6 @@
         SendSessionData = 13,
         SendMapData = 14,
         SendTileUpdate = 15,
-        SendTilesUpdate = 16,
 
         CreateSession = 20,
 
@@ -34,7 +33,7 @@
 
         SetTiles = 61,
         Shoot = 62,
-        Bomb = 63,
-        DoubleShoot = 64
+
+        NewSessionsAdded = 70,
     }
 }

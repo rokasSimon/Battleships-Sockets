@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
+using System.Collections.Generic;
 
 namespace BattleshipsCore.Game
 {
@@ -28,7 +29,13 @@ namespace BattleshipsCore.Game
 
         public bool Join(PlayerData player)
         {
-            if (Active || BattleActive || _players.ContainsKey(player.Name)) return false;
+            if (Active || BattleActive ) return false;
+
+            // TODO: check
+            if(_players.ContainsKey(player.Name)) {
+                player.JoinedSession = this;
+                return true;
+            }
 
             player.JoinedSession = this;
             _players.Add(player.Name, player);
@@ -102,9 +109,7 @@ namespace BattleshipsCore.Game
                 {
                     foreach (var tile in obj.Tiles)
                     {
-                        
-                            map.Grid[tile.X, tile.Y].Type = obj.Obj.Type;
-                        
+                        map.Grid[tile.X, tile.Y].Type = obj.Obj.Type;
                     }
                 }
 
@@ -136,143 +141,33 @@ namespace BattleshipsCore.Game
             return true;
         }
 
-        public (GameState, TileUpdate?) GetTurnFor(string playerName)
+        public (GameState, List<TileUpdate?>) GetTurnFor(string playerName)
         {
             if (_playerMaps.TryGetValue(playerName, out var gameData))
             {
                 return (gameData.GameState, gameData.TileToUpdate);
             }
 
-            return (GameState.Unknown, null);
+            return (GameState.Unknown, new List<TileUpdate?>());
         }
 
-        public (GameState, TileUpdate?) Shoot(string playerName, Vec2 position)
+        public (GameState, List<TileUpdate?>) Shoot(string playerName, List<Vec2> positions)
         {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null);
+            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, new List<TileUpdate?>());
 
             var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
+            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, new List<TileUpdate?>());
+            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, new List<TileUpdate?>());
 
             var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, null);
+            if (opponentMapData == null) return (GameState.Unknown, new List<TileUpdate?>());
 
-            if (!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, null);
+            var list = new List<TileUpdate?>();
 
-            var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
-            var newTileType = shotTile switch
-            {
-                TileType.Ship => TileType.Hit,
-                TileType.Tank => TileType.Hit,
-                TileType.Hit => TileType.Hit,
-                _ => TileType.Miss,
-            };
+            foreach (var position in positions) {
+                if(!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, new List<TileUpdate?>());
 
-            if (newTileType == TileType.Hit && shotTile != TileType.Hit)
-            {
-                opponentMapData.TilesToHit--;
-            }
-
-            opponentMapData.Grid![position.X, position.Y].Type = newTileType;
-            var tileUpdate = new TileUpdate(position, newTileType);
-
-            if (opponentMapData.TilesToHit == 0)
-            {
-                opponentMapData.GameState = GameState.Lost;
-                myMap.GameState = GameState.Won;
-            }
-            else
-            {
-                opponentMapData.TileToUpdate = tileUpdate;
-                opponentMapData.GameState = GameState.YourTurn;
-                myMap.GameState = GameState.EnemyTurn;
-            }
-
-            return (myMap.GameState, tileUpdate);
-        }
-        public (GameState, TileUpdate?[]) Bomb(string playerName, Vec2 position)
-        {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null);
-
-            var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
-
-            var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, null);
-
-            if (!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, null);
-
-            var shotTile = new[] {
-
-            opponentMapData.Grid![position.X, position.Y].Type,
-            opponentMapData.Grid![position.X, position.Y+1].Type,
-            opponentMapData.Grid![position.X, position.Y-1].Type,
-            opponentMapData.Grid![position.X-1, position.Y].Type,
-            opponentMapData.Grid![position.X+1, position.Y].Type
-            };
-
-            for (int i = 0; i < shotTile.Count();i++)
-            {
-                var t = shotTile[i] switch
-                {
-                    TileType.Ship => TileType.Hit,
-                    TileType.Hit => TileType.Hit,
-                    _ => TileType.Miss,
-                };
-                shotTile[i] = t;
-            }
-
-            var tileUpdate = new[] {
-
-            new TileUpdate(new Vec2(position.X,position.Y), TileType.Water),
-            new TileUpdate(new Vec2(position.X,position.Y+1), TileType.Water),
-            new TileUpdate(new Vec2(position.X,position.Y-1), TileType.Water),
-            new TileUpdate(new Vec2(position.X-1,position.Y), TileType.Water),
-            new TileUpdate(new Vec2(position.X+1,position.Y), TileType.Water)
-            };
-
-            
-
-            for (int i = 0; i < shotTile.Count(); i++)
-            {
-                opponentMapData.Grid![position.X, position.Y].Type = shotTile[i];
-                tileUpdate[i] = new TileUpdate(tileUpdate[i].TilePosition, shotTile[i]);
-                //var tileUpdate = new TileUpdate(position, shotTile[i]);
-                if (opponentMapData.TilesToHit == 0)
-                {
-                    opponentMapData.GameState = GameState.Lost;
-                    myMap.GameState = GameState.Won;
-                }
-                else
-                {
-                    opponentMapData.TileToUpdate = tileUpdate[i];
-                    opponentMapData.GameState = GameState.YourTurn;
-                    myMap.GameState = GameState.EnemyTurn;
-                }
-
-            }            
-
-            return (myMap.GameState, tileUpdate);
-        }
-
-       /* public (GameState, TileUpdate[]?) NukeShoot(string playerName, Vec2[] position)
-        {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null);
-
-            var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
-
-            var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, null);
-            //objects list of tiles update
-            TileUpdate[] tilesUpdate = new TileUpdate[];
-            foreach (var pos in position)
-            {
-                if (!IsInsideGrid(opponentMapData.Size, pos)) return (GameState.Unknown, null);
-
-                var shotTile = opponentMapData.Grid![pos.X, pos.Y].Type;
+                var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
                 var newTileType = shotTile switch
                 {
                     TileType.Ship => TileType.Hit,
@@ -287,8 +182,9 @@ namespace BattleshipsCore.Game
 
                 opponentMapData.Grid![position.X, position.Y].Type = newTileType;
                 var tileUpdate = new TileUpdate(position, newTileType);
-                tilesUpdate.add(tileUpdate);
+                list.Add(tileUpdate);
             }
+
             if (opponentMapData.TilesToHit == 0)
             {
                 opponentMapData.GameState = GameState.Lost;
@@ -296,60 +192,13 @@ namespace BattleshipsCore.Game
             }
             else
             {
-                opponentMapData.TileToUpdate = tileUpdate;
+             
+                opponentMapData.TileToUpdate = list;
                 opponentMapData.GameState = GameState.YourTurn;
                 myMap.GameState = GameState.EnemyTurn;
             }
-            return (myMap.GameState, tilesUpdate);
-        }*/
 
-        public (GameState, TileUpdate?[]) Bomb(string playerName, Vec2[] position)
-        {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null) ;
-
-            var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
-
-            var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, null);
-            TileUpdate[] tileUpdate = new TileUpdate[position.Length];
-            for (int i=0; i < position.Length; i++)
-            {
-                if (!IsInsideGrid(opponentMapData.Size, position[i])) return (GameState.Unknown, null);
-
-                var shotTile = opponentMapData.Grid![position[i].X, position[i].Y].Type;
-                var newTileType = shotTile switch
-                {
-                    TileType.Ship => TileType.Hit,
-                    TileType.Tank => TileType.Hit,
-                    TileType.Hit => TileType.Hit,
-                    _ => TileType.Miss,
-                };
-
-                if (newTileType == TileType.Hit && shotTile != TileType.Hit)
-                {
-                    opponentMapData.TilesToHit--;
-                }
-
-                opponentMapData.Grid![position[i].X, position[i].Y].Type = newTileType;
-                tileUpdate[i] = new TileUpdate(position[i], newTileType);
-
-                if (opponentMapData.TilesToHit == 0)
-                {
-                    opponentMapData.GameState = GameState.Lost;
-                    myMap.GameState = GameState.Won;
-                }
-                else
-                {
-                    opponentMapData.TileToUpdate = tileUpdate[i];
-                    opponentMapData.GameState = GameState.YourTurn;
-                    myMap.GameState = GameState.EnemyTurn;
-                }
-
-            }
-
-            return (myMap.GameState, tileUpdate);
+            return (myMap.GameState, list);
         }
 
         private PlayerGameState? GetOpponentMapValue(string playerName)
@@ -364,7 +213,7 @@ namespace BattleshipsCore.Game
 
         private PlayerGameState GenerateNewMap()
         {
-            return new PlayerGameState(new(15, 15));
+            return new PlayerGameState(new(Constants.GridRowCount, Constants.GridColumnCount));
         }
 
         private static void CopyGrid(Tile[,] source, Tile[,] destination)

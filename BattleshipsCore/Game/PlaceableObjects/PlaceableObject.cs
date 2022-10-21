@@ -1,5 +1,4 @@
 ﻿using BattleshipsCore.Game.GameGrid;
-using BattleshipsCore.Game.PlaceableObjects.Tank;
 using Newtonsoft.Json;
 
 #nullable disable
@@ -18,9 +17,6 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Name = name;
             MaximumCount = max;
         }
-
-        public abstract IShip GetShip(string name);
-        public abstract ITank GetTank(string name);
 
         public void Rotate()
         {

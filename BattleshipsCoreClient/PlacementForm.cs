@@ -2,8 +2,6 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
-using BattleshipsCore.Game.PlaceableObjects.Ship;
-using BattleshipsCore.Game.PlaceableObjects.Tank;
 using BattleshipsCore.Requests;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
@@ -25,17 +23,11 @@ namespace BattleshipsCoreClient
 
         private readonly PlaceableObject[] _placeableObjects = new[]
         {
-            
-
-           (PlaceableObject)new Ship("small ship",1,1 ),
-           (PlaceableObject)new Ship("medium ship", 2,2),
-           (PlaceableObject)new Ship("large ship", 1,3 )
-           //(PlaceableObject)new Tank("small tank",1 ,1),
-           //(PlaceableObject)new Tank("medium tank", 2,2),
-           //(PlaceableObject)new  Tank("large tank", 1,3 )
-
+            new Ship("One Tile Ship", 3, 1),
+            new Ship("Two Tile Ship", 2, 2),
+            new Ship("Three Tile Ship", 1, 3),
+            new Ship("Four Tile Ship", 1, 4),
         };
-        
 
         public PlacementForm()
         {
@@ -55,7 +47,7 @@ namespace BattleshipsCoreClient
                 button.AutoSize = true;
                 button.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                 button.BackColor = Color.White;
-                
+
                 button.Click += PlaceableObjectButton_Click;
 
                 PlaceableObjectPanel.Controls.Add(button);
@@ -337,11 +329,6 @@ namespace BattleshipsCoreClient
             PlaceableObjectButtons.Clear();
             SelectedTileGroups.Clear();
             HoveredButtonPositions.Clear();
-        }
-
-        private void PlaceableObjectPanel_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }
