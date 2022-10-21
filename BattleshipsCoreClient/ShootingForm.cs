@@ -18,6 +18,7 @@ namespace BattleshipsCoreClient
         private ShootingStrategy shootingStrategy { get; set; }
         List<SaveTileState> states = new List<SaveTileState>();
 
+
         public ShootingForm()
         {
             InputDisabled = true;
