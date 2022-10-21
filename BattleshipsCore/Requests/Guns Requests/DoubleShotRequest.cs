@@ -13,6 +13,7 @@ namespace BattleshipsCore.Requests.Guns_Requests
 {
     public class DoubleShotRequest : GunRequest
     {
+
         public override MessageType Type => MessageType.DoubleShoot;
 
         public string Initiator { get; set; }
@@ -41,6 +42,7 @@ namespace BattleshipsCore.Requests.Guns_Requests
 
 
             return new SendTilesUpdateResponse(newGameState1, tileUpdatee);
+
         }
     }
 }

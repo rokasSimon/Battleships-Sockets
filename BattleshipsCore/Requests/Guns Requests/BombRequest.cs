@@ -30,7 +30,6 @@ namespace BattleshipsCore.Requests.Guns_Requests
             Pos4 = new Vec2(pos.X - 1, pos.Y);
             Pos5 = new Vec2(pos.X + 1, pos.Y);
         }
-
         public override Message Execute()
         {
             var thisPlayer = ServerGameStateManager.Instance.GetPlayer(Initiator);
@@ -38,6 +37,7 @@ namespace BattleshipsCore.Requests.Guns_Requests
             if (thisPlayer == null ||
                 thisPlayer.JoinedSession == null ||
                 !thisPlayer.JoinedSession.BattleActive) return new FailResponse();
+
 
 
             TileUpdate[] tileUpdate = new TileUpdate[5];
@@ -50,5 +50,7 @@ namespace BattleshipsCore.Requests.Guns_Requests
         }
 
         
+        
+
     }
 }

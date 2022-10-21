@@ -9,10 +9,7 @@
         Hit = 4,
         Unavailable = 5,
         Destroyed = 6,
-        Tank = 7,
-        MarkedToShoot = 8,
-        MarkedToSuspectShip = 9,
-        MarkedToSuspectTank = 10
+        Tank = 7
 
     }
 }

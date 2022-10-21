@@ -3,11 +3,6 @@ using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 using BattleshipsCore.Game;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BattleshipsCore.Requests.Guns_Requests
 {
@@ -24,8 +19,11 @@ namespace BattleshipsCore.Requests.Guns_Requests
         public string Initiator { get; set; }
         public Vec2 Pos { get; set; }
 
-        
-      
+        public GunRequest(string initiator, Vec2 pos)
+        {
+            Initiator = initiator;
+            Pos = pos;
+        }
 
         public override Message Execute()
         {

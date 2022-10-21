@@ -190,6 +190,71 @@ namespace BattleshipsCore.Game
 
             return (myMap.GameState, tileUpdate);
         }
+        public (GameState, TileUpdate?[]) Bomb(string playerName, Vec2 position)
+        {
+            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, null);
+
+            var myMap = _playerMaps[playerName];
+            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, null);
+            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, null);
+
+            var opponentMapData = GetOpponentMapValue(playerName);
+            if (opponentMapData == null) return (GameState.Unknown, null);
+
+            if (!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, null);
+
+            var shotTile = new[] {
+
+            opponentMapData.Grid![position.X, position.Y].Type,
+            opponentMapData.Grid![position.X, position.Y+1].Type,
+            opponentMapData.Grid![position.X, position.Y-1].Type,
+            opponentMapData.Grid![position.X-1, position.Y].Type,
+            opponentMapData.Grid![position.X+1, position.Y].Type
+            };
+
+            for (int i = 0; i < shotTile.Count();i++)
+            {
+                var t = shotTile[i] switch
+                {
+                    TileType.Ship => TileType.Hit,
+                    TileType.Hit => TileType.Hit,
+                    _ => TileType.Miss,
+                };
+                shotTile[i] = t;
+            }
+
+            var tileUpdate = new[] {
+
+            new TileUpdate(new Vec2(position.X,position.Y), TileType.Water),
+            new TileUpdate(new Vec2(position.X,position.Y+1), TileType.Water),
+            new TileUpdate(new Vec2(position.X,position.Y-1), TileType.Water),
+            new TileUpdate(new Vec2(position.X-1,position.Y), TileType.Water),
+            new TileUpdate(new Vec2(position.X+1,position.Y), TileType.Water)
+            };
+
+            
+
+            for (int i = 0; i < shotTile.Count(); i++)
+            {
+                opponentMapData.Grid![position.X, position.Y].Type = shotTile[i];
+                tileUpdate[i] = new TileUpdate(tileUpdate[i].TilePosition, shotTile[i]);
+                //var tileUpdate = new TileUpdate(position, shotTile[i]);
+                if (opponentMapData.TilesToHit == 0)
+                {
+                    opponentMapData.GameState = GameState.Lost;
+                    myMap.GameState = GameState.Won;
+                }
+                else
+                {
+                    opponentMapData.TileToUpdate = tileUpdate[i];
+                    opponentMapData.GameState = GameState.YourTurn;
+                    myMap.GameState = GameState.EnemyTurn;
+                }
+
+            }            
+
+            return (myMap.GameState, tileUpdate);
+        }
 
        /* public (GameState, TileUpdate[]?) NukeShoot(string playerName, Vec2[] position)
         {
