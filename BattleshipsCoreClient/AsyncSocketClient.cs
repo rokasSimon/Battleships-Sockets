@@ -2,17 +2,14 @@
 using System.Net;
 using System.Text;
 using BattleshipsCore.Interfaces;
-using BattleshipsCore.Game;
 using BattleshipsCore.Server;
-using System;
 using BattleshipsCore.Responses;
-using System.Windows.Forms;
-using BattleshipsCore.Game.SessionObserver;
-using BattleshipsCoreClient.Helpers;
+using BattleshipsCoreClient.Observer;
+using Message = BattleshipsCore.Interfaces.Message;
 
 namespace BattleshipsCoreClient
 {
-    public class AsyncSocketClient : SessionFormSubject
+    public class AsyncSocketClient : IMessagePublisher
     {
         private const int ListenerPort = 42069;
         private const int BufferSize = 4096;
@@ -22,6 +19,10 @@ namespace BattleshipsCoreClient
 
         private readonly IMessageParser _commandFactory;
 
+        private readonly List<ISubscriber> _subscribers;
+
+        private bool _isListening;
+
         public AsyncSocketClient(IPAddress ipAddress, IMessageParser commandFactory)
         {
             _commandFactory = commandFactory;
@@ -30,107 +31,149 @@ namespace BattleshipsCoreClient
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             _clientSocketData = new SocketStateData(socket);
+            _subscribers = new List<ISubscriber>();
+            _isListening = false;
         }
 
-
-        public bool Connect(string name)
-        {
-            _clientSocketData.Socket.Connect(_serverEndPoint);
-
-            return SendCommand<JoinServerRequest, OkResponse>(new JoinServerRequest(name)) != null;
-        }
-
-        public void Disconnect(string name)
-        {
-            SendCommand<DisconnectRequest, OkResponse>(new DisconnectRequest(name));
-        }
-
-        public TResponse? SendCommand<TRequest, TResponse>(TRequest request)
-            where TRequest : Request
-            where TResponse : BattleshipsCore.Interfaces.Message
+        public async Task<bool> ConnectAsync()
         {
             try
             {
+                await _clientSocketData.Socket.ConnectAsync(_serverEndPoint);
 
+                Listen();
 
-                var result = Task.Run(() =>
+                return _clientSocketData.Socket.Connected == true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task DisconnectAsync()
+        {
+            try
+            {
+                await _clientSocketData.Socket.DisconnectAsync(false);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
+
+        public async Task SendMessageAsync<TMessage>(TMessage message)
+            where TMessage : Message
+        {
+            try
+            {
+                await SendMessageUnsafeAsync(message);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
+
+        public async Task Notify(Message message)
+        {
+            for (int i = _subscribers.Count - 1; i >= 0; i--)
+            {
+                await _subscribers[i].UpdateAsync(message);
+            }
+        }
+
+        public void Subscribe(ISubscriber listener)
+        {
+            _subscribers.Add(listener);
+        }
+
+        public void Unsubscribe(ISubscriber listener)
+        {
+            _subscribers.Remove(listener);
+        }
+
+        private void Listen()
+        {
+            _isListening = true;
+
+            new Thread(async () =>
+            {
+                Thread.CurrentThread.IsBackground = true;
+
+                while (_isListening)
                 {
-                    return SendCommandUnsafe<TRequest, TResponse>(request);
-                }).Result;
+                    var response = await ReceiveMessage();
 
+                    if (response == null)
+                    {
+                        _isListening = false;
+                        return;
+                    }
 
+                    try
+                    {
+                        var parsedMessage = _commandFactory.ParseResponse<Message>(response);
 
-                return result;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
+                        await Notify(parsedMessage);
+                    }
+                    catch (Exception)
+                    {
+                        var messages = TrySplittingMessage(response);
 
-        public async Task<TResponse?> SendCommandAsync<TRequest, TResponse>(TRequest request)
-            where TRequest : Request
-            where TResponse : BattleshipsCore.Interfaces.Message
-        {
-            try
-            {
-                return await SendCommandUnsafe<TRequest, TResponse>(request);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        private async Task<TResponse?> SendCommandUnsafe<TRequest, TResponse>(TRequest request)
-            where TRequest : Request
-            where TResponse : BattleshipsCore.Interfaces.Message
-        {
-            var commandMessage = _commandFactory.SerializeMessage(request);
-
-            var response = await Send(commandMessage);
-
-
-            // TODO: Handling unexpected response
-            try
-            {
-                while (true && response != "") {
-                    var test = _commandFactory.ParseResponse<NewSessionsAddedResponse>(response!);
-                    Notify();
-                    response =  await ReceiveMessage();
+                        foreach (var msg in messages)
+                        {
+                            await Notify(msg);
+                        }
+                    }
                 }
-            } catch (Newtonsoft.Json.JsonReaderException){
-                Notify();
-                response = await ReceiveMessage();
-            } catch (Exception) { }
-
-
-            return _commandFactory.ParseResponse<TResponse>(response!);
+            }).Start();
         }
 
-        private async Task<string?> Send(string message)
+        private async Task SendMessageUnsafeAsync<TMessage>(TMessage message)
+            where TMessage : Message
         {
-            var data = Encoding.UTF8.GetBytes(message);
-            await _clientSocketData.Socket.SendAsync(data, SocketFlags.None);
+            var messageData = _commandFactory.SerializeMessage(message);
+            var data = Encoding.UTF8.GetBytes(messageData);
 
-            return await ReceiveMessage();
+            await _clientSocketData.Socket.SendAsync(data, SocketFlags.None);
+        }
+
+        private List<Message> TrySplittingMessage(string response)
+        {
+            var messages = new List<Message>();
+
+            var splits = response.Split("<EOF>", StringSplitOptions.RemoveEmptyEntries); //response.Replace("<EOF>", "\0");
+            //var splits = separated.Split('\0');
+
+            foreach (var msg in splits)
+            {
+                messages.Add(_commandFactory.ParseResponse<Message>(msg));
+            }
+
+            return messages;
         }
 
         private async Task<string?> ReceiveMessage()
         {
+            var response = string.Empty;
             var buffer = new byte[BufferSize];
 
             try
             {
-                var bytesReceived = await _clientSocketData.Socket.ReceiveAsync(buffer, SocketFlags.None);
-                var response = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+                const string MessageEnding = "<EOF>";
 
-                return response;
+                while (!response.Contains(MessageEnding))
+                {
+                    var bytesReceived = await _clientSocketData.Socket.ReceiveAsync(buffer, SocketFlags.None);
+                    response += Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+                }
+
+                return response[0..^MessageEnding.Length];
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                ServerLogger.Instance.LogError(e.Message);
-
                 return null;
             }
         }

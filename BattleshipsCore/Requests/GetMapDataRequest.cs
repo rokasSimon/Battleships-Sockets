@@ -17,17 +17,17 @@ namespace BattleshipsCore.Requests
             RequestingPlayer = requestingPlayer;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var session = ServerGameStateManager.Instance.GetSession(SessionId);
 
-            if (session == null) return new FailResponse();
+            if (session == null) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
             var map = session.GetMapFor(RequestingPlayer);
 
-            if (map == null) return new FailResponse();
+            if (map == null) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
-            return new SendMapDataResponse(map);
+            return new List<(Message, Guid)> { (new SendMapDataResponse(map), connectionId) };
         }
     }
 }

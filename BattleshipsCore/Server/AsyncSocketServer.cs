@@ -66,7 +66,8 @@ namespace BattleshipsCore.Server
                 ServerLogger.Instance.LogInfo($"Received message: '{response}';");
 
                 var command = _commandFactory.ParseRequest<Request>(response);
-                var responseCommand = command.Execute();
+
+                var responseTargets = command.Execute(client.Id);
 
                 // Handling for connection based requests
                 switch (command)
@@ -85,7 +86,10 @@ namespace BattleshipsCore.Server
                     default: break;
                 }
 
-                SendCommand(responseCommand, client);
+                foreach (var (res, cl) in responseTargets)
+                {
+                    SendResponse(res, _connectedClients[cl]);
+                }
 
                 CheckForDisconnectedClients();
 
@@ -105,11 +109,11 @@ namespace BattleshipsCore.Server
             }
             catch (Exception e)
             {
-                ServerLogger.Instance.LogError($"Caught exception: ({e})");
+                ServerLogger.Instance.LogError($"Caught exception: ({e.Message})");
             }
         }
 
-        private void SendCommand(Message command, SocketStateData socketData)
+        private void SendResponse(Message command, SocketStateData socketData)
         {
             var commandMessage = _commandFactory.SerializeMessage(command);
 
@@ -120,7 +124,7 @@ namespace BattleshipsCore.Server
         {
             ServerLogger.Instance.LogInfo($"Sending response of '{message}';");
 
-            var data = Encoding.UTF8.GetBytes(message);
+            var data = Encoding.UTF8.GetBytes(message + "<EOF>");
 
             socketData.Socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(SendCallback), socketData);
         }
@@ -142,11 +146,11 @@ namespace BattleshipsCore.Server
         {
             try
             {
-                SendCommand(new FailResponse(), clientData);
+                SendResponse(new FailResponse(), clientData);
             }
             catch (Exception)
             {
-                ServerLogger.Instance.LogInfo("Could not respond with error;");
+                ServerLogger.Instance.LogError("Could not respond with error;");
             }
         }
 

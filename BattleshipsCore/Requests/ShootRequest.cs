@@ -13,27 +13,37 @@ namespace BattleshipsCore.Requests
         public string Initiator { get; set; }
         public List<Vec2> Pos { get; set; }
 
-
-
         public ShootRequest(string initiator, List<Vec2> pos)
         {
             Initiator = initiator;
             Pos = pos;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var thisPlayer = ServerGameStateManager.Instance.GetPlayer(Initiator);
 
             if (thisPlayer == null ||
                 thisPlayer.JoinedSession == null ||
-                !thisPlayer.JoinedSession.BattleActive) return new FailResponse();
+                !thisPlayer.JoinedSession.BattleActive)
+                return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
-            var (newGameState, tileUpdate) = thisPlayer.JoinedSession.Shoot(Initiator, Pos);
+            var session = thisPlayer.JoinedSession;
 
-            if (newGameState == GameState.Unknown) return new FailResponse();
+            var (newGameState, tileUpdate) = session.Shoot(Initiator, Pos);
 
-            return new SendTileUpdateResponse(newGameState, tileUpdate);
+            if (newGameState == GameState.Unknown)
+                return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
+
+            var otherPlayer = session.PlayerNames.Except(new[] { thisPlayer.Name }).First();
+            var otherPlayerData = ServerGameStateManager.Instance.GetPlayer(otherPlayer)!;
+            var (otherPlayerState, otherPlayerUpdates) = session.GetTurnFor(otherPlayer);
+
+            return new List<(Message, Guid)>
+            { 
+                (new SendTileUpdateResponse(newGameState, tileUpdate), connectionId),
+                (new SendTileUpdateResponse(otherPlayerState, otherPlayerUpdates), otherPlayerData.SocketData.Id),
+            };
         }
     }
 }

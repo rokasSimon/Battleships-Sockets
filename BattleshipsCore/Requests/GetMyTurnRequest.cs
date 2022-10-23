@@ -16,17 +16,17 @@ namespace BattleshipsCore.Requests
             PlayerName = playerName;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var thisPlayer = ServerGameStateManager.Instance.GetPlayer(PlayerName);
 
             if (thisPlayer == null ||
                 thisPlayer.JoinedSession == null ||
-                !thisPlayer.JoinedSession.BattleActive) return new FailResponse();
+                !thisPlayer.JoinedSession.BattleActive) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
             var (myTurn, tileUpdate) = thisPlayer.JoinedSession.GetTurnFor(PlayerName);
 
-            return new SendTileUpdateResponse(myTurn, tileUpdate);
+            return new List<(Message, Guid)> { (new SendTileUpdateResponse(myTurn, tileUpdate), connectionId) };
         }
     }
 }

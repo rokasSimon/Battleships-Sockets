@@ -3,15 +3,17 @@ using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
 using BattleshipsCore.Requests;
+using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Commands;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
+using BattleshipsCoreClient.Observer;
 
 namespace BattleshipsCoreClient
 {
-    public partial class PlacementForm : Form
+    public partial class PlacementForm : Form, ISubscriber
     {
-        private const int MaximumRememberedCommands = 10;
+        private const int MaximumRememberedCommands = 20;
 
         private GameMapData? OriginalMapData { get; set; }
         private Tile[,]? CurrentGrid { get; set; } 
@@ -42,6 +44,21 @@ namespace BattleshipsCoreClient
             ExecutedCommandStack = new DropoutStack<ICommand>(MaximumRememberedCommands);
             InitializeComponent();
 
+            InitializePlaceableObjects();
+
+            FormClosed += PlacementForm_FormClosed;
+        }
+
+        public void UpdateTile(TileUpdate update)
+        {
+            var tiles = new List<Vec2> { update.TilePosition };
+
+            SetTiles(tiles, update.NewType);
+            ColorTiles(tiles, update.NewType.ToColor());
+        }
+
+        private void InitializePlaceableObjects()
+        {
             foreach (var item in _placeableObjects)
             {
                 var button = new Button();
@@ -58,8 +75,6 @@ namespace BattleshipsCoreClient
                 PlaceableObjectPanel.Controls.Add(button);
                 PlaceableObjectButtons.Add(buttonId, new PlaceableObjectButton(button, item, item.MaximumCount));
             }
-
-            FormClosed += PlacementForm_FormClosed;
         }
 
         private void PlacementForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -67,27 +82,10 @@ namespace BattleshipsCoreClient
             Application.Exit();
         }
 
-        public void ShowWindow(GameMapData mapData)
+        private void Initialize(GameMapData mapData)
         {
-            Program.ActiveSessionForm.Hide();
-
             OriginalMapData = mapData;
-
-            InitializeGrid();
-            Show();
-        }
-
-        public void UpdateTile(TileUpdate update)
-        {
-            var tiles = new List<Vec2> { update.TilePosition };
-
-            SetTiles(tiles, update.NewType);
-            ColorTiles(tiles, update.NewType.ToColor());
-        }
-
-        private void InitializeGrid()
-        {
-            CurrentGrid = OriginalMapData!.Grid;
+            CurrentGrid = mapData.Grid;
 
             var rows = CurrentGrid.GetLength(0);
             var columns = CurrentGrid.GetLength(1);
@@ -227,62 +225,71 @@ namespace BattleshipsCoreClient
                 placeObjectCommand.Execute();
 
                 ExecutedCommandStack.Push(placeObjectCommand);
-                //var selectedTiles = placeableObjectButton.PlaceableObject.HoverTiles(GridSize, pos);
-
-                //ColorTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type.ToColor());
-                //SetTiles(selectedTiles, placeableObjectButton.PlaceableObject.Type);
-
-                //SelectedTileGroups.Add(new SelectedObject(placeableObjectButton, selectedTiles));
-                //UpdatePlaceableObjectButtonCount(placeableObjectButton, -1);
             }
         }
 
-        private void LeaveButton_Click(object sender, EventArgs e)
+        private async void LeaveButton_Click(object sender, EventArgs e)
         {
             ClearData();
 
-            GameClientManager.Instance.LeaveSession();
+            var session = GameClientManager.Instance.ActiveSession;
+            var player = GameClientManager.Instance.PlayerName;
 
-            Program.SessionForm.ShowWindow();
+            if (session != null && player != null)
+            {
+                await GameClientManager.Instance.Client!
+                    .SendMessageAsync(new LeaveSessionRequest(session.SessionKey, player));
+            }
         }
 
         private async void PlayButton_Click(object sender, EventArgs e)
         {
             if (InputDisabled) return;
 
-            var startBattleResponse = await GameClientManager.Instance
-                .Client!
-                .SendCommandAsync<StartBattleRequest, OkResponse>(
-                new StartBattleRequest(GameClientManager.Instance.PlayerName!));
+            await GameClientManager.Instance.Client!
+                .SendMessageAsync(new StartBattleRequest(GameClientManager.Instance.PlayerName!));
 
-            if (startBattleResponse == null)
-            {
-                MessageBox.Show("Other player has not finished setting up.");
-                return;
-            }
+            //var startBattleResponse = await GameClientManager.Instance
+            //    .Client!
+            //    .SendCommandAsync<StartBattleRequest, OkResponse>(
+            //    new StartBattleRequest(GameClientManager.Instance.PlayerName!));
 
-            InputDisabled = true;
-            await Program.ShootingForm.ShowWindow();
+            //if (startBattleResponse == null)
+            //{
+            //    MessageBox.Show("Other player has not finished setting up.");
+            //    return;
+            //}
+
+            //InputDisabled = true;
+            //await Program.ShootingForm.ShowWindow();
         }
 
-        private void SaveTileButton_Click(object sender, EventArgs e)
+        private async void SaveTileButton_Click(object sender, EventArgs e)
         {
             if (InputDisabled || SelectedTileGroups.Count == 0) return;
 
-            var setTilesResponse = GameClientManager.Instance
-                .Client!
-                .SendCommand<SetTilesRequest, OkResponse>(
-                new SetTilesRequest(GameClientManager.Instance.PlayerName!,
-                        SelectedTileGroups.Select(x =>
-                        {
-                            return new PlacedObject(x.ButtonData.PlaceableObject, x.Tiles);
-                        }).ToList()));
+            await GameClientManager.Instance.Client!
+                .SendMessageAsync(new SetTilesRequest(
+                    GameClientManager.Instance.PlayerName!,
+                    SelectedTileGroups.Select(x =>
+                    {
+                        return new PlacedObject(x.ButtonData.PlaceableObject, x.Tiles);
+                    }).ToList()));
 
-            if (setTilesResponse == null)
-            {
-                MessageBox.Show("Could not save tiles.", "Error");
-                return;
-            }
+            //var setTilesResponse = GameClientManager.Instance
+            //    .Client!
+            //    .SendCommand<SetTilesRequest, OkResponse>(
+            //    new SetTilesRequest(GameClientManager.Instance.PlayerName!,
+            //            SelectedTileGroups.Select(x =>
+            //            {
+            //                return new PlacedObject(x.ButtonData.PlaceableObject, x.Tiles);
+            //            }).ToList()));
+
+            //if (setTilesResponse == null)
+            //{
+            //    MessageBox.Show("Could not save tiles.", "Error");
+            //    return;
+            //}
         }
 
         private void RotateButton_Click(object sender, EventArgs e)
@@ -328,7 +335,7 @@ namespace BattleshipsCoreClient
             buttonData.Button.Text = $"{buttonData.PlaceableObject.Name} x{buttonData.LeftCount}";
         }
 
-        private void ClearData()
+        public void ClearData()
         {
             InputDisabled = false;
             CurrentGrid = null;
@@ -341,10 +348,33 @@ namespace BattleshipsCoreClient
 
         private void UndoButton_Click(object sender, EventArgs e)
         {
+            if (InputDisabled) return;
+
             var lastCommand = ExecutedCommandStack.Pop();
             if (lastCommand == null) return;
 
             lastCommand.Undo();
+        }
+
+        public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
+        {
+            if (message is SendMapDataResponse smdr)
+            {
+                TileGrid.Invoke(() =>
+                {
+                    Initialize(smdr.MapData);
+                });
+            }
+            else if (message is StartedBattleResponse sbr)
+            {
+                InputDisabled = true;
+
+                await Program.EnableShootingForm();
+            }
+            else if (message is LeftSessionResponse lsr)
+            {
+                await Program.SwitchToSessionListFrom(this);
+            }
         }
     }
 }

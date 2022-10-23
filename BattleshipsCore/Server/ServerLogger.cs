@@ -1,8 +1,12 @@
-﻿namespace BattleshipsCore.Server
+﻿using BattleshipsCore.Game;
+
+namespace BattleshipsCore.Server
 {
     public class ServerLogger
     {
+        private static readonly object _consoleWriteLock = new();
         private static ServerLogger? _instance;
+
         private ServerLogger()
         {
             _defaultTextColor = ConsoleColor.Gray;
@@ -16,7 +20,13 @@
         {
             get
             {
-                _instance ??= new ServerLogger();
+                if (_instance == null)
+                {
+                    lock (_consoleWriteLock)
+                    {
+                        _instance ??= new ServerLogger();
+                    }
+                }
 
                 return _instance;
             }
@@ -41,13 +51,16 @@
 
         private void PrintToConsole(string message, ConsoleColor color)
         {
-            if (ShowTimestamp) Console.Write($"[{DateTime.Now.ToLongTimeString()}]    ");
+            lock (_consoleWriteLock)
+            {
+                if (ShowTimestamp) Console.Write($"[{DateTime.Now.ToLongTimeString()}]    ");
 
-            Console.ForegroundColor = color;
-            Console.WriteLine(message);
+                Console.ForegroundColor = color;
+                Console.WriteLine(message);
 
-            Console.ForegroundColor = _defaultTextColor;
-            Console.BackgroundColor = _defaultBackgroundColor;
+                Console.ForegroundColor = _defaultTextColor;
+                Console.BackgroundColor = _defaultBackgroundColor;
+            }
         }
     }
 }

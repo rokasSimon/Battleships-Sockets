@@ -9,6 +9,6 @@ namespace BattleshipsCore.Game.ShootingStrategy
 {
     public abstract class ShootingStrategy
     {
-        public abstract void targetPositions(List<Vec2> targetedPositions, Vec2 selectedPosition);
+        public abstract List<Vec2> TargetPositions(Vec2 selectedPosition);
     }
 }

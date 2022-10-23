@@ -1,16 +1,8 @@
 ﻿using BattleshipsCore.Data;
-using BattleshipsCore.Game.SessionObserver;
-using BattleshipsCore.Server;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BattleshipsCore.Game
 {
-    internal class ServerGameStateManager : SessionSubject
+    internal class ServerGameStateManager// : SessionSubject
     {
         private static readonly object _lock = new();
         private static ServerGameStateManager? _instance;
@@ -45,7 +37,7 @@ namespace BattleshipsCore.Game
             if (_players.ContainsKey(player.Name)) return false;
 
             _players.Add(player.Name, player);
-            Attach(player);
+            //Attach(player);
 
             return true;
         }
@@ -87,9 +79,27 @@ namespace BattleshipsCore.Game
             return _players[name];
         }
 
+        public PlayerData[] GetPlayers(params string[] names)
+        {
+            return _players.Values.Where(p => names.Contains(p.Name)).ToArray();
+        }
+
         public PlayerData? GetConnectedPlayer(Guid connectionId)
         {
             return _players.Values.SingleOrDefault(x => x.SocketData?.Id == connectionId);
+        }
+
+        public PlayerData[] GetConnectedPlayers()
+        {
+            return _players.Select(x => x.Value).ToArray();
+        }
+
+        public PlayerData[] GetConnectedPlayers(params Guid[] playersToExclude)
+        {
+            return _players
+                .Select(x => x.Value)
+                .Where(x => !playersToExclude.Contains(x.SocketData.Id))
+                .ToArray();
         }
 
         public Guid? TryCreateSession(string initiator, string sessionName)
@@ -100,7 +110,6 @@ namespace BattleshipsCore.Game
             var sessionKey = Guid.NewGuid();
 
             _sessions.Add(sessionKey, session);
-            SessionCount = _sessions.Count;
 
             return sessionKey;
         }
@@ -119,6 +128,19 @@ namespace BattleshipsCore.Game
                     };
                 })
                 .ToList();
+        }
+
+        public void RemoveSession(Guid sessionId)
+        {
+            var session = GetSession(sessionId)!;
+            session.StopSession();
+
+            _sessions.Remove(sessionId);
+        }
+
+        public void RemovePlayer(string playerName)
+        {
+            _players.Remove(playerName);
         }
 
         public bool TryJoiningSession(Guid sessionId, string joiningPlayer)

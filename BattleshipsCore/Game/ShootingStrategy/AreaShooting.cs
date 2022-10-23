@@ -1,18 +1,14 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BattleshipsCore.Game.ShootingStrategy
 {
     public class AreaShooting : ShootingStrategy
     {
-        public override void targetPositions(List<Vec2> targetedPositions, Vec2 selectedPosition)
+        public override List<Vec2> TargetPositions(Vec2 selectedPosition)
         {
+            var targetedPositions = new List<Vec2>();
+
             var posX = selectedPosition.X;
             var posY = selectedPosition.Y;
 
@@ -26,6 +22,8 @@ namespace BattleshipsCore.Game.ShootingStrategy
                     }
                 }
             }
+
+            return targetedPositions;
         }
     }
 }
