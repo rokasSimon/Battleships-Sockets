@@ -2,38 +2,44 @@
 {
     public enum MessageType : int
     {
-        Unknown = 0,
-        Ok = 1,
-        Fail = 2,
+        Unknown,
+        Ok,
+        Fail,
 
-        JoinServer = 3,
-        Disconnect = 4,
+        JoinServer,
+        JoinedServer,
+        Disconnect,
+        Disconnected,
 
-        JoinSession = 5,
-        LeaveSession = 6,
+        JoinSession,
+        JoinedSession,
+        LeaveSession,
+        LeftSession,
 
-        SendPlayerList = 10,
-        SendSessionKey = 11,
-        SendSessionList = 12,
-        SendSessionData = 13,
-        SendMapData = 14,
-        SendTileUpdate = 15,
+        SendPlayerList,
+        SendSessionKey,
+        SendSessionList,
+        SendSessionData,
+        SendMapData,
+        SendTileUpdate,
 
-        CreateSession = 20,
+        CreateSession,
 
-        GetSessionList = 30,
-        GetSessionData = 31,
-        GetPlayerList = 32,
-        GetMapData = 33,
-        GetOpponentMap = 34,
-        GetMyTurn = 35,
+        GetSessionList,
+        GetSessionData,
+        GetPlayerList,
+        GetMapData,
+        GetOpponentMap,
+        GetMyTurn,
 
-        StartGame = 50,
-        StartBattle = 51,
+        StartGame,
+        StartedGame,
+        StartBattle,
+        StartedBattle,
 
-        SetTiles = 61,
-        Shoot = 62,
+        SetTiles,
+        Shoot,
 
-        NewSessionsAdded = 70,
+        NewSessionsAdded,
     }
 }

@@ -1,12 +1,6 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
-using BattleshipsCore.Game.SessionObserver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BattleshipsCoreClient
 {
@@ -15,14 +9,11 @@ namespace BattleshipsCoreClient
         private static readonly object _lock = new();
         private static GameClientManager? _instance;
 
-        private GameClientManager()
-        {
-
-        }
+        private GameClientManager() { }
 
         public AsyncSocketClient? Client { get; private set; }
-        public GameSessionData? ActiveSession { get; private set; }
-        public string? PlayerName { get; private set; }
+        public GameSessionData? ActiveSession { get; set; }
+        public string? PlayerName { get; set; }
 
         public static GameClientManager Instance
         {
@@ -40,73 +31,38 @@ namespace BattleshipsCoreClient
             }
         }
 
-        public bool Connect(IPAddress ip, string name)
+        public async Task<bool> EstablishClient(IPAddress ip)
         {
-            if (Client != null && PlayerName != null) Client.Disconnect(PlayerName);
+            if (Client != null)
+            {
+                await Client.DisconnectAsync();
+            }
 
-            PlayerName = name;
             Client = new AsyncSocketClient(ip, new GameMessageParser());
 
-            return Client.Connect(PlayerName!);
+            var establishedConnection = await Client.ConnectAsync();
+            if (!establishedConnection) return false;
+
+            return true;
         }
 
-        public bool Disconnect()
+        public async Task<bool> DisconnectAsync()
         {
             if (Client == null || PlayerName == null) return false;
 
-            Client.Disconnect(PlayerName);
+            await Client.SendMessageAsync(new DisconnectRequest(PlayerName));
+            await Client.DisconnectAsync();
             PlayerName = null;
             Client = null;
 
             return true;
         }
 
-        public GameSessionData? CreateSession(string sessionName)
+        public async Task LeaveSessionAsync()
         {
-            if (Client == null) return null;
+            if (Client == null || ActiveSession == null) return;
 
-            var createSessionResponse = Client!.SendCommand<CreateSessionRequest, SendSessionKeyResponse>(
-                    new CreateSessionRequest(PlayerName!, sessionName));
-
-            if (createSessionResponse == null) return null;
-
-            var sessionData = new GameSessionData { SessionKey = createSessionResponse.SessionKey, SessionName = sessionName, PlayerNames = new List<string> { PlayerName! }, Active = false };
-
-            //ActiveSession = sessionData;
-
-            return sessionData;
-        }
-
-        public bool JoinSession(GameSessionData session)
-        {
-            if (Client == null) return false;
-
-            var success = Client.SendCommand<JoinSessionRequest, OkResponse>(new JoinSessionRequest(session.SessionKey, PlayerName!)) != null;
-
-            if (success)
-            {
-                ActiveSession = session;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool LeaveSession()
-        {
-            if (Client == null || ActiveSession == null) return false;
-
-            var success = Client.SendCommand<LeaveSessionRequest, OkResponse>(new LeaveSessionRequest(ActiveSession.SessionKey, PlayerName!)) != null;
-
-            if (success)
-            {
-                ActiveSession = null;
-
-                return true;
-            }
-
-            return false;
+            await Client.SendMessageAsync(new LeaveSessionRequest(ActiveSession.SessionKey, PlayerName!));
         }
     }
 }

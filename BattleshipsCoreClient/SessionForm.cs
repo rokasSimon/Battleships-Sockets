@@ -1,12 +1,12 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
-using BattleshipsCore.Game.SessionObserver;
-using BattleshipsCoreClient.Helpers;
-using System;
+using BattleshipsCore.Responses;
+using BattleshipsCoreClient.Observer;
+using Message = BattleshipsCore.Interfaces.Message;
 
 namespace BattleshipsCoreClient
 {
-    public partial class SessionForm : Form, ISessionFormObserver
+    public partial class SessionForm : Form, ISubscriber
     {
         public List<GameSessionData> SessionList { get; set; }
 
@@ -19,24 +19,12 @@ namespace BattleshipsCoreClient
             FormClosed += SessionForm_FormClosed;
         }
 
-        public void ShowWindow()
-        {
-            Program.ConnectionForm.Hide();
-            Program.ActiveSessionForm.Hide();
-            Program.PlacementForm.Hide();
-            Program.ShootingForm.Hide();
-
-            RefreshSessions();
-            Show();
-            if (GameClientManager.Instance.Client != null) GameClientManager.Instance.Client.Attach(this);
-        }
-
         private void SessionForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
             Application.Exit();
         }
 
-        private void SessionRow_Click(object sender, DataGridViewCellEventArgs e)
+        private async void SessionRow_Click(object sender, DataGridViewCellEventArgs e)
         {
             var rowClicked = e.RowIndex;
 
@@ -44,15 +32,16 @@ namespace BattleshipsCoreClient
 
             var sessionData = SessionList[rowClicked];
 
-            JoinSession(sessionData);
+            await GameClientManager.Instance.Client!
+                .SendMessageAsync(new JoinSessionRequest(sessionData.SessionKey, GameClientManager.Instance.PlayerName!));
         }
 
-        private void RefreshButton_Click(object sender, EventArgs e)
+        private async void RefreshButton_Click(object sender, EventArgs e)
         {
-            RefreshSessions();
+            await GameClientManager.Instance.Client!.SendMessageAsync(new GetSessionListRequest());
         }
 
-        private void CreateSessionButton_Click(object sender, EventArgs e)
+        private async void CreateSessionButton_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(CreateSessionTextBox.Text))
             {
@@ -60,44 +49,22 @@ namespace BattleshipsCoreClient
             }
             else
             {
-                var createdSessionData = GameClientManager.Instance.CreateSession(CreateSessionTextBox.Text);
-                
-                if (createdSessionData == null)
-                {
-                    MessageBox.Show("Could not create new session.", "Error");
+                var playerName = GameClientManager.Instance.PlayerName!;
+                var sessionName = CreateSessionTextBox.Text;
 
-                    return;
-                }
-
-               //Program.ActiveSessionForm.ShowWindow(createdSessionData);
+                await GameClientManager.Instance.Client!.SendMessageAsync(new CreateSessionRequest(playerName, sessionName));
             }
         }
 
-        private void DisconnectButton_Click(object sender, EventArgs e)
+        private async void DisconnectButton_Click(object sender, EventArgs e)
         {
-            var success = GameClientManager.Instance.Disconnect();
+            var _ = await GameClientManager.Instance.DisconnectAsync();
 
-            if (!success)
-            {
-                MessageBox.Show("Already disconnected", "Error");
-            }
-
-            Program.ConnectionForm.ShowWindow();
+            await Program.SwitchToConnectionFormFrom(this);
         }
 
-        private void RefreshSessions()
+        private void RefreshSessions(SendSessionListResponse sessionListResponse)
         {
-            var sessionListResponse = GameClientManager.Instance.Client!
-                .SendCommand<GetSessionListRequest, SendSessionListResponse>(
-                new GetSessionListRequest());
-
-            if (sessionListResponse == null)
-            {
-                MessageBox.Show("Could not refresh session list.", "Error");
-
-                return;
-            }
-
             SessionList = sessionListResponse.SessionList;
             SessionListGrid.Rows.Clear();
 
@@ -111,23 +78,29 @@ namespace BattleshipsCoreClient
 
         }
 
-        private void JoinSession(GameSessionData session)
+        public async Task UpdateAsync(Message message)
         {
-            var success = GameClientManager.Instance.JoinSession(session);
-
-            if (!success)
+            if (message is SendSessionListResponse sessionListResponse)
             {
-                MessageBox.Show("Could not join session.", "Error");
-
-                return;
+                // You must use Invoke if you want to modify winforms components from this Update function
+                // because this UpdateAsync is running on a background thread
+                SessionListGrid.Invoke(() =>
+                {
+                    RefreshSessions(sessionListResponse);
+                });
             }
-
-            Program.ActiveSessionForm.ShowWindow(session);
-        }
-
-        public void Update(SessionFormSubject sessionSubject)
-        {
-            MessageBox.Show("New sessions were added" );
+            else if (message is SendSessionKeyResponse sskr)
+            {
+                await Program.SwitchToActiveSessionFormFromSessionList(sskr.SessionKey);
+            }
+            else if (message is JoinedSessionResponse jsr)
+            {
+                await Program.SwitchToActiveSessionFormFromSessionList(jsr.SessionId);
+            }
+            else if (message is DisconnectResponse)
+            {
+                await Program.SwitchToConnectionFormFrom(this);
+            }
         }
     }
 }

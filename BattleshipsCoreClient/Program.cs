@@ -1,5 +1,10 @@
 #nullable disable
 
+using BattleshipsCore.Game;
+using BattleshipsCore.Requests;
+using BattleshipsCoreClient.Observer;
+using System.Windows.Forms;
+
 namespace BattleshipsCoreClient
 {
     internal static class Program
@@ -10,14 +15,11 @@ namespace BattleshipsCoreClient
         public static PlacementForm PlacementForm;
         public static ShootingForm ShootingForm;
 
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
+        public static GameClientManager _gm;
+
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -27,8 +29,117 @@ namespace BattleshipsCoreClient
             ActiveSessionForm = new ActiveSessionForm();
             PlacementForm = new PlacementForm();
             ShootingForm = new ShootingForm();
+            _gm = GameClientManager.Instance;
 
             Application.Run(ConnectionForm);
+        }
+
+        public static async Task SwitchToConnectionFormFrom<TGameForm>(TGameForm form)
+            where TGameForm : Form, ISubscriber
+        {
+            if (_gm.Client != null)
+            {
+                _gm.Client.Unsubscribe(form);
+                _gm.Client.Subscribe(ConnectionForm);
+
+                await _gm.DisconnectAsync();
+            }
+
+            form.Invoke(() =>
+            {
+                ConnectionForm.Show();
+                SessionForm.Hide();
+                ActiveSessionForm.Hide();
+                PlacementForm.Hide();
+                ShootingForm.Hide();
+            });
+        }
+
+        public static async Task SwitchToSessionListFrom<TGameForm>(TGameForm form)
+            where TGameForm : Form, ISubscriber
+        {
+            _gm.Client.Unsubscribe(form);
+            _gm.Client.Subscribe(SessionForm);
+
+            await _gm.Client.SendMessageAsync(new GetSessionListRequest());
+
+            form.Invoke(() =>
+            {
+                SessionForm.Show();
+                ConnectionForm.Hide();
+                ActiveSessionForm.Hide();
+                PlacementForm.Hide();
+                ShootingForm.Hide();
+            });
+        }
+
+        public static async Task SwitchToActiveSessionFormFromSessionList(Guid sessionKey)
+        {
+            _gm.Client.Unsubscribe(SessionForm);
+            _gm.Client.Subscribe(ActiveSessionForm);
+
+            await _gm.Client.SendMessageAsync(new GetSessionDataRequest(sessionKey));
+
+            SessionForm.Invoke(() =>
+            {
+                ActiveSessionForm.Show();
+                ConnectionForm.Hide();
+                SessionForm.Hide();
+                PlacementForm.Hide();
+                ShootingForm.Hide();
+            });
+        }
+
+        public static async Task SwitchToPlacementFormFromActiveSession(Guid sessionKey, string playerName)
+        {
+            _gm.Client.Unsubscribe(ActiveSessionForm);
+            _gm.Client.Subscribe(PlacementForm);
+
+            await _gm.Client.SendMessageAsync(new GetMapDataRequest(sessionKey, playerName));
+
+            ActiveSessionForm.Invoke(() =>
+            {
+                PlacementForm.Show();
+                ConnectionForm.Hide();
+                SessionForm.Hide();
+                ActiveSessionForm.Hide();
+                ShootingForm.Hide();
+            });
+        }
+
+        public static async Task EnableShootingForm()
+        {
+            _gm.Client.Subscribe(ShootingForm);
+
+            await _gm.Client.SendMessageAsync(new GetOpponentMapRequest(_gm.PlayerName!));
+            await _gm.Client.SendMessageAsync(new GetMyTurnRequest(_gm.PlayerName!));
+
+            PlacementForm.Invoke(() =>
+            {
+                ShootingForm.Show();
+                ConnectionForm.Hide();
+                SessionForm.Hide();
+                ActiveSessionForm.Hide();
+            });
+        }
+
+        public static async Task LeaveShootingForm()
+        {
+            _gm.Client.Unsubscribe(PlacementForm);
+            _gm.Client.Unsubscribe(ShootingForm);
+            _gm.Client.Subscribe(SessionForm);
+
+            await _gm.Client.SendMessageAsync(new GetSessionListRequest());
+
+            ShootingForm.Invoke(() =>
+            {
+                SessionForm.Show();
+                ConnectionForm.Hide();
+                ActiveSessionForm.Hide();
+                PlacementForm.Hide();
+                PlacementForm.ClearData();
+                ShootingForm.Hide();
+            });
         }
     }
 }

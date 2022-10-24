@@ -1,4 +1,5 @@
 ﻿using BattleshipsCore.Interfaces;
+using BattleshipsCore.Responses;
 
 namespace BattleshipsCore.Game
 {
@@ -12,20 +13,20 @@ namespace BattleshipsCore.Game
             PlayerName = playerName;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var newPlayerData = new PlayerData
             {
-                Name = PlayerName
+                Name = PlayerName,
             };
 
             if (ServerGameStateManager.Instance.TryAddPlayer(newPlayerData))
             {
-                return new OkResponse();
+                return new List<(Message, Guid)> { (new JoinedServerResponse(), connectionId) };
             }
             else
             {
-                return new FailResponse();
+                return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
             }
         }
     }

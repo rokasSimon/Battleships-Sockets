@@ -9,20 +9,22 @@ var serverProcessName = Process.GetCurrentProcess().ProcessName;
 
 if (Process.GetProcesses().Count(p => p.ProcessName == serverProcessName) > 1)
 {
-    Console.WriteLine($"Server is already running under process name '{serverProcessName}';");
+    ServerLogger.Instance.LogError($"Server is already running under process name '{serverProcessName}';");
 
+    Console.ReadKey();
     return;
 }
 
+ServerLogger.Instance.ShowTimestamp = true;
 var selectedIpAddress = await SelectIpAddressAsync();
 var commandParser = new GameMessageParser();
 
-Console.WriteLine("Starting server;");
+ServerLogger.Instance.LogInfo("Starting server;");
 using (var serverListener = new AsyncSocketServer(selectedIpAddress, commandParser))
 {
     serverListener.Run();
 
-    Console.WriteLine("Server is running;");
+    ServerLogger.Instance.LogInfo("Server is running;");
     Console.Read();
 }
 
@@ -37,19 +39,22 @@ async static Task<IPAddress> SelectIpAddressAsync()
 
     var ipv4Addresses = hostEntryInfo.AddressList.Where(adr => adr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToArray();
 
-    Console.WriteLine("Available IPv4 addresses:");
+    ServerLogger.Instance.LogInfo("Available IPv4 addresses:");
     for (int i = 0; i < ipv4Addresses.Length; i++)
     {
-        Console.WriteLine($"    {i}. {ipv4Addresses[i]}");
+        ServerLogger.Instance.LogInfo($"    {i}. {ipv4Addresses[i]}");
     }
 
     int ipAddressIndex = 0;
     do
     {
-        Console.Write("Select index: ");
-        ipAddressIndex = (int)(Console.ReadKey().KeyChar) - 48;
-        Console.WriteLine();
+        ServerLogger.Instance.LogInfo($"Select index (0-{ipv4Addresses.Length - 1});");
+        ipAddressIndex = Console.ReadKey(true).KeyChar - 48;
     } while (ipAddressIndex < 0 || ipAddressIndex >= ipv4Addresses.Length);
 
-    return ipv4Addresses[ipAddressIndex];
+    var ipAddress = ipv4Addresses[ipAddressIndex];
+
+    ServerLogger.Instance.LogInfo($"Server is running on {ipAddress};");
+
+    return ipAddress;
 }

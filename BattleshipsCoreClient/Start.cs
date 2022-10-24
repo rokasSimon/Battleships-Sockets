@@ -1,9 +1,15 @@
 ﻿using System.Net;
+using BattleshipsCore.Game;
+using BattleshipsCore.Responses;
+using BattleshipsCoreClient.Observer;
+using Message = BattleshipsCore.Interfaces.Message;
 
 namespace BattleshipsCoreClient
 {
-    public partial class Start : Form
+    public partial class Start : Form, ISubscriber
     {
+        private string? _username;
+
         public Start()
         {
             InitializeComponent();
@@ -25,7 +31,7 @@ namespace BattleshipsCoreClient
             Application.Exit();
         }
 
-        private void ConnectClick(object sender, EventArgs e)
+        private async void ConnectClick(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(UsernameTextBox.Text))
             {
@@ -39,26 +45,41 @@ namespace BattleshipsCoreClient
             {
                 try
                 {
-                    var username = UsernameTextBox.Text;
+                    _username = UsernameTextBox.Text;
                     
                     if (IPAddress.TryParse(IpTextBox.Text, out var ipAddress))
                     {
-                        var success = GameClientManager.Instance.Connect(ipAddress, username);
+                        var clientConnected = await GameClientManager.Instance.EstablishClient(ipAddress);
 
-                        if (success)
+                        if (!clientConnected)
                         {
-                            Program.SessionForm.ShowWindow();
+                            MessageBox.Show("Could not establish connection to server. Try checking IP address.");
+                            return;
                         }
-                        else
-                        {
-                            MessageBox.Show("Failed to connect to server.", "Error");
-                        }
+
+                        GameClientManager.Instance.Client!.Subscribe(this);
+
+                        await GameClientManager.Instance.Client!.SendMessageAsync(new JoinServerRequest(_username));
                     }
                 }
                 catch (Exception)
                 {
                     MessageBox.Show("Could not connect to the server.", "Connection Error");
                 }
+            }
+        }
+
+        public async Task UpdateAsync(Message message)
+        {
+            if (message is JoinedServerResponse)
+            {
+                GameClientManager.Instance.PlayerName = _username;
+
+                await Program.SwitchToSessionListFrom(this);
+            }
+            else if (message is FailResponse)
+            {
+                MessageBox.Show("Could not connect to the server.", "Connection Error");
             }
         }
     }

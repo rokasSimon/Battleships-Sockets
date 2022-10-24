@@ -14,17 +14,28 @@ namespace BattleshipsCore.Game
             SessionName = sessionName;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var sessionKey = ServerGameStateManager.Instance.TryCreateSession(InitiatorName, SessionName);
 
             if (sessionKey == null)
             {
-                return new FailResponse();
+                return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
             }
             else
             {
-                return new SendSessionKeyResponse(sessionKey.Value);
+                var players = ServerGameStateManager.Instance.GetConnectedPlayers(connectionId);
+                var updateResponse = new SendSessionListResponse(ServerGameStateManager.Instance.GetSessionList());
+                var responses = new List<(Message, Guid)>(players.Length);
+
+                foreach (var player in players)
+                {
+                    responses.Add((updateResponse, player.SocketData!.Id));
+                }
+
+                responses.Add((new SendSessionKeyResponse(sessionKey.Value), connectionId));
+
+                return responses;
             }
         }
     }
