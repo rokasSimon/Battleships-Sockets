@@ -9,7 +9,7 @@ using Message = BattleshipsCore.Interfaces.Message;
 
 namespace BattleshipsCoreClient
 {
-    public class AsyncSocketClient : IMessagePublisher
+    public class AsyncSocketClient : MessagePublisher
     {
         private const int ListenerPort = 42069;
         private const int BufferSize = 4096;
@@ -18,8 +18,6 @@ namespace BattleshipsCoreClient
         private readonly SocketStateData _clientSocketData;
 
         private readonly IMessageParser _commandFactory;
-
-        private readonly List<ISubscriber> _subscribers;
 
         private bool _isListening;
 
@@ -31,7 +29,6 @@ namespace BattleshipsCoreClient
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             _clientSocketData = new SocketStateData(socket);
-            _subscribers = new List<ISubscriber>();
             _isListening = false;
         }
 
@@ -76,23 +73,6 @@ namespace BattleshipsCoreClient
             }
         }
 
-        public async Task Notify(Message message)
-        {
-            for (int i = _subscribers.Count - 1; i >= 0; i--)
-            {
-                await _subscribers[i].UpdateAsync(message);
-            }
-        }
-
-        public void Subscribe(ISubscriber listener)
-        {
-            _subscribers.Add(listener);
-        }
-
-        public void Unsubscribe(ISubscriber listener)
-        {
-            _subscribers.Remove(listener);
-        }
 
         private void Listen()
         {
@@ -116,7 +96,7 @@ namespace BattleshipsCoreClient
                     {
                         var parsedMessage = _commandFactory.ParseResponse<Message>(response);
 
-                        await Notify(parsedMessage);
+                        await SetMessage(parsedMessage);
                     }
                     catch (Exception)
                     {
@@ -124,7 +104,7 @@ namespace BattleshipsCoreClient
 
                         foreach (var msg in messages)
                         {
-                            await Notify(msg);
+                            await SetMessage(msg);
                         }
                     }
                 }

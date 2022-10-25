@@ -4,6 +4,6 @@ namespace BattleshipsCoreClient.Observer
 {
     public interface ISubscriber
     {
-        Task UpdateAsync(Message message);
+        Task UpdateAsync();
     }
 }

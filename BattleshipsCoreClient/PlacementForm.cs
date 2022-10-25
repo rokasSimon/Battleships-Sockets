@@ -356,8 +356,13 @@ namespace BattleshipsCoreClient
             lastCommand.Undo();
         }
 
-        public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
+        public async Task UpdateAsync()
         {
+            var client = GameClientManager.Instance.Client;
+            if (client == null) return;
+
+            var message = client.GetMessage();
+
             if (message is SendMapDataResponse smdr)
             {
                 TileGrid.Invoke(() =>

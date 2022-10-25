@@ -76,8 +76,13 @@ namespace BattleshipsCoreClient
             JoinedPlayers.Clear();
         }
 
-        public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
+        public async Task UpdateAsync()
         {
+            var client = GameClientManager.Instance.Client;
+            if (client == null) return;
+
+            var message = client.GetMessage();
+
             if (message is SendSessionDataResponse ssdr)
             {
                 PlayerListBox.Invoke(() =>

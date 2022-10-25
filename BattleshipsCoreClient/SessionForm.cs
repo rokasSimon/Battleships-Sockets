@@ -78,8 +78,13 @@ namespace BattleshipsCoreClient
 
         }
 
-        public async Task UpdateAsync(Message message)
+        public async Task UpdateAsync()
         {
+            var client = GameClientManager.Instance.Client;
+            if (client == null) return;
+
+            var message = client.GetMessage();
+
             if (message is SendSessionListResponse sessionListResponse)
             {
                 // You must use Invoke if you want to modify winforms components from this Update function
