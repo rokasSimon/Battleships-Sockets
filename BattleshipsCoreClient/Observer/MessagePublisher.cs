@@ -7,19 +7,6 @@ namespace BattleshipsCoreClient.Observer
     {
         private readonly List<ISubscriber> _subscribers = new();
 
-        private Message? _Message;
-
-        public Message? GetMessage()
-        {
-            return _Message;
-        }
-
-        public async Task SetMessage(Message message)
-        {
-            _Message = message;
-            await Notify();
-        }
-
         public async Task Notify()
         {
             for (int i = _subscribers.Count - 1; i >= 0; i--)

@@ -32,6 +32,20 @@ namespace BattleshipsCoreClient
             _isListening = false;
         }
 
+        private Message? _Message;
+
+        public Message? GetMessage()
+        {
+            return _Message;
+        }
+
+        public async Task SetMessage(Message message)
+        {
+            _Message = message;
+            await Notify();
+        }
+
+
         public async Task<bool> ConnectAsync()
         {
             try
