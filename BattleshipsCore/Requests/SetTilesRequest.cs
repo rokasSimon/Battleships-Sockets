@@ -17,19 +17,19 @@ namespace BattleshipsCore.Requests
             PlacedObjects = placedObjects;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var player = ServerGameStateManager.Instance.GetPlayer(PlayerName);
 
             if (player == null ||
                 player.JoinedSession == null ||
-                !player.JoinedSession.Active) return new FailResponse();
+                !player.JoinedSession.Active) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
             var success = player.JoinedSession.SetMapFor(PlayerName, PlacedObjects);
 
-            if (!success) return new FailResponse();
+            if (!success) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
-            return new OkResponse();
+            return new List<(Message, Guid)> { (new OkResponse(), connectionId) }; ;
         }
     }
 }

@@ -1,19 +1,20 @@
 ﻿using BattleshipsCore.Data;
+using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.ShootingStrategy;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
+using BattleshipsCoreClient.Observer;
 
 namespace BattleshipsCoreClient
 {
-    public partial class ShootingForm : Form
+    public partial class ShootingForm : Form, ISubscriber
     {
-        private GameMapData? OriginalMapData { get; set; }
+        //private GameMapData? OriginalMapData { get; set; }
         private Tile[,]? CurrentGrid { get; set; }
         private bool InputDisabled { get; set; }
-        private bool RefreshLoopActive { get; set; }
 
         private ShootingStrategy shootingStrategy { get; set; }
         List<SaveTileState> states = new List<SaveTileState>();
@@ -22,7 +23,6 @@ namespace BattleshipsCoreClient
         public ShootingForm()
         {
             InputDisabled = true;
-            RefreshLoopActive = false;
 
             InitializeComponent();
 
@@ -38,18 +38,10 @@ namespace BattleshipsCoreClient
             Application.Exit();
         }
 
-        public async Task ShowWindow()
+        private void Initialize(GameMapData opponentMap)
         {
-            GetOpponentMap();
-            InitialiseGrid();
-            Show();
-
-            await EnableRefreshLoop();
-        }
-
-        private void InitialiseGrid()
-        {
-            CurrentGrid = OriginalMapData!.Grid;
+            //OriginalMapData = opponentMap;
+            CurrentGrid = opponentMap.Grid;
 
             var rows = CurrentGrid.GetLength(0);
             var columns = CurrentGrid.GetLength(1);
@@ -102,6 +94,7 @@ namespace BattleshipsCoreClient
             int i = int.Parse(coordinates[0]);
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
+
 
             var success = await Shoot(pos);
 
@@ -192,111 +185,38 @@ namespace BattleshipsCoreClient
         {
             const string YourTurnText = "Your Turn";
 
-            InputDisabled = false;
-            TurnLabel.Text = YourTurnText;
-            //RefreshLoopActive = false;
-        }
+            var targetPositions = shootingStrategy.TargetPositions(pos);
 
-        private async Task TakeAwayTurn()
-        {
-            const string EnemyTurnText = "Enemy Turn";
 
-            InputDisabled = true;
-            TurnLabel.Text = EnemyTurnText;
-
-            //await EnableRefreshLoop();
-        }
-
-        private void GetOpponentMap()
-        {
-            var opponentMapResponse = GameClientManager.Instance
-                .Client!
-                .SendCommand<GetOpponentMapRequest, SendMapDataResponse>(
-                new GetOpponentMapRequest(GameClientManager.Instance.PlayerName!));
-
-            if (opponentMapResponse == null)
-            {
-                MessageBox.Show("Could not retrieve opponent map.");
-                return;
-            }
-
-            OriginalMapData = opponentMapResponse.MapData;
-        }
-
-        private async Task EnableRefreshLoop()
-        {
-            RefreshLoopActive = true;
-
-            while (RefreshLoopActive)
-            {
-                await Task.Delay(3000); // Just so it doesn't spam requests so much
-
-                if (InputDisabled)
-                {
-                    var isMyTurnResponse = await GameClientManager.Instance
-                        .Client!
-                        .SendCommandAsync<GetMyTurnRequest, SendTileUpdateResponse>(
-                        new GetMyTurnRequest(GameClientManager.Instance.PlayerName!));
-
-                    // Should not fail unless something bad happened or calling from wrong context
-                    if (isMyTurnResponse == null)
-                    {
-                        QuitGame();
-                        return;
-                    }
-
-                    if (isMyTurnResponse.GameState == GameState.Won) Win();
-                    else if (isMyTurnResponse.GameState == GameState.Lost) Lose();
-                    else if (isMyTurnResponse.GameState == GameState.YourTurn)
-                    {
-                        foreach(var tileUpdate in isMyTurnResponse.TileUpdate)
-
-                        if (tileUpdate != null)
-                        {
-                            Program.PlacementForm.UpdateTile(tileUpdate);
-                        }
-
-                        GrantTurn();
-                    }
-                    else if (isMyTurnResponse.GameState == GameState.EnemyTurn)
-                    {
-                        await TakeAwayTurn();
-                    }
-                    else
-                    {
-                        QuitGame();
-                    }
-                }
-            }
-        }
-
-        private async Task<bool> Shoot(Vec2 position)
-        {
-            var targetPositions = new List<Vec2>();
-            shootingStrategy.targetPositions(targetPositions, position);
-
-            var response = await GameClientManager.Instance
-                .Client!
-                .SendCommandAsync<ShootRequest, SendTileUpdateResponse>(
+            await GameClientManager.Instance.Client!
+                .SendMessageAsync(
                 new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
+        }
 
-            if (response == null) return false;
-            var updated = false;
-
-            foreach (var tileUpdate in response.TileUpdate) {
-                if (response.GameState != GameState.Unknown && tileUpdate != null)
-                {
-                    UpdateTile(tileUpdate);
-
-                    if (response.GameState == GameState.Lost) Lose();
-                    else if (response.GameState == GameState.Won) Win();
-
-                    updated = true;
-                }
+        private async void UpdateGame(List<TileUpdate> updates, GameState newGameState)
+        {
+            switch (newGameState)
+            {
+                case GameState.Won: await WinAsync(); break;
+                case GameState.Lost: await LoseAsync(); break;
+                case GameState.YourTurn:
+                    {
+                        foreach (var tu in updates)
+                        {
+                            Program.PlacementForm.UpdateTile(tu);
+                        }
+                        GrantTurn();
+                    } break;
+                case GameState.EnemyTurn:
+                    {
+                        foreach (var tu in updates)
+                        {
+                            UpdateTile(tu);
+                        }
+                        TakeAwayTurn();
+                    } break;
+                default: await QuitGameAsync(); return;
             }
-
-         
-            return updated;
         }
 
         private void UpdateTile(TileUpdate update)
@@ -327,38 +247,53 @@ namespace BattleshipsCoreClient
             }
         }
 
-        private void Win()
+        private async Task WinAsync()
         {
             ClearData();
             MessageBox.Show("You won!", "Game Over");
 
-            GameClientManager.Instance.LeaveSession();
-            Program.SessionForm.ShowWindow();
+            await GameClientManager.Instance.LeaveSessionAsync();
+            await Program.LeaveShootingForm();
         }
 
-        private void Lose()
+        private async Task LoseAsync()
         {
             ClearData();
             MessageBox.Show("You lost!", "Game Over");
 
-            GameClientManager.Instance.LeaveSession();
-            Program.SessionForm.ShowWindow();
+            await GameClientManager.Instance.LeaveSessionAsync();
+            await Program.LeaveShootingForm();
         }
 
-        private void QuitGame()
+        private async Task QuitGameAsync()
         {
             ClearData();
+            MessageBox.Show("Critical error occured - disconnecting.", "Error");
 
-            GameClientManager.Instance.Disconnect();
-            Program.ConnectionForm.ShowWindow();
+            await GameClientManager.Instance.DisconnectAsync();
+            await Program.LeaveShootingForm();
+        }
+
+        private void GrantTurn()
+        {
+            const string YourTurnText = "Your Turn";
+
+            InputDisabled = false;
+            TurnLabel.Text = YourTurnText;
+        }
+
+        private void TakeAwayTurn()
+        {
+            const string EnemyTurnText = "Enemy Turn";
+
+            InputDisabled = true;
+            TurnLabel.Text = EnemyTurnText;
         }
 
         private void ClearData()
         {
-            OriginalMapData = null;
             CurrentGrid = null;
             InputDisabled = true;
-            RefreshLoopActive = false;
         }
 
         private void SetSingleTileShootingStrategy(object sender, EventArgs e) {
@@ -382,6 +317,34 @@ namespace BattleshipsCoreClient
         {
             shootingStrategy = new VerticalLineShooting();
             label2.Text = " - VerticalLineShooting";
+        }
+
+        public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
+        {
+            if (message is LeftSessionResponse)
+            {
+                GameClientManager.Instance.ActiveSession = null;
+
+                await Program.LeaveShootingForm();
+            }
+            else if (message is DisconnectResponse dr)
+            {
+                await Program.SwitchToConnectionFormFrom(this);
+            }
+            else if (message is SendTileUpdateResponse stur)
+            {
+                TileGrid.Invoke(() =>
+                {
+                    UpdateGame(stur.TileUpdate, stur.GameState);
+                });
+            }
+            else if (message is SendMapDataResponse smdr)
+            {
+                TileGrid.Invoke(() =>
+                {
+                    Initialize(smdr.MapData);
+                });
+            }
         }
     }
 }

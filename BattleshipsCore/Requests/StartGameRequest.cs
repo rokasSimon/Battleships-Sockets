@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
+using BattleshipsCore.Responses;
 
 namespace BattleshipsCore.Requests
 {
@@ -14,15 +15,29 @@ namespace BattleshipsCore.Requests
             SessionId = sessionId;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var session = ServerGameStateManager.Instance.GetSession(SessionId);
-            if (session == null) return new FailResponse();
+            if (session == null)
+                return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
             var success = session.StartSession();
 
-            if (success) return new OkResponse();
-            return new FailResponse();
+            if (success)
+            {
+                var players = ServerGameStateManager.Instance.GetPlayers(session.PlayerNames.ToArray());
+
+                var response = new StartedGameResponse();
+                var responses = new List<(Message, Guid)>(players.Length);
+
+                foreach (var p in players)
+                {
+                    responses.Add((response, p.SocketData.Id));
+                }
+
+                return responses;
+            }
+            return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
         }
     }
 }

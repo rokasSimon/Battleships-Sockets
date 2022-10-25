@@ -1,4 +1,5 @@
 ﻿using BattleshipsCore.Interfaces;
+using BattleshipsCore.Responses;
 
 namespace BattleshipsCore.Game
 {
@@ -12,13 +13,13 @@ namespace BattleshipsCore.Game
             PlayerName = playerName;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var player = ServerGameStateManager.Instance.GetPlayer(PlayerName);
 
             if (player != null) ServerGameStateManager.Instance.TryRemovePlayer(player.Name);
 
-            return new OkResponse();
+            return new List<(Message, Guid)>() { (new DisconnectResponse(), connectionId) };
         }
     }
 }
