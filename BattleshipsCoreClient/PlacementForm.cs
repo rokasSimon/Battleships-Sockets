@@ -14,6 +14,18 @@ namespace BattleshipsCoreClient
         private Tile[,]? CurrentGrid { get; set; } 
         private Vec2 GridSize => new(CurrentGrid!.GetLength(1), CurrentGrid!.GetLength(0));
 
+        private int level1 = 1;
+
+        public int Getlevel()
+        {
+            return level1;
+        }
+
+        public void Setlevel(int value)
+        {
+            level1 = value;
+        }
+
         private PlaceableObjectButton? SelectedPlaceableObject { get; set; }
         private Dictionary<Guid, PlaceableObjectButton> PlaceableObjectButtons { get; set; }
         private List<SelectedObject> SelectedTileGroups { get; set; }
@@ -21,23 +33,55 @@ namespace BattleshipsCoreClient
 
         private bool InputDisabled { get; set; }
 
-        private readonly PlaceableObject[] _placeableObjects = new[]
+        private readonly PlaceableObject[] ship1 = new[]
         {
-            new Ship("One Tile Ship", 3, 1),
-            new Ship("Two Tile Ship", 2, 2),
-            new Ship("Three Tile Ship", 1, 3),
-            new Ship("Four Tile Ship", 1, 4),
+            new Ship1(1, "A1", 3, 1)                                   
+        };
+        private readonly PlaceableObject[] ship2 = new[]
+        {
+            new Ship2(2, "A2", 2, 2)                                   
+        };
+        private readonly PlaceableObject[] ship3 = new[]
+        {
+            new Ship3(3, "A3", 1, 3)                                   
+        };
+        private readonly PlaceableObject[] superShip1 = new[]
+        {
+            new SuperShip1(1, "S1", 8, 1)                                   
+        };
+        private readonly PlaceableObject[] superShip2 = new[]
+        {
+            new SuperShip1(4, "S2", 2, 2)                                   
+        };
+        private readonly PlaceableObject[] superShip3 = new[]
+        {
+            new SuperShip1(5, "S3", 4, 3)                                   
         };
 
         public PlacementForm()
-        {
+        {            
             InputDisabled = false;
             HoveredButtonPositions = new List<Vec2>();
             SelectedTileGroups = new List<SelectedObject>();
             PlaceableObjectButtons = new Dictionary<Guid, PlaceableObjectButton>();
             InitializeComponent();
+            if(Getlevel() == 1)
+            {
+                generateButtons(ship1);
+                generateButtons(ship2);
+                generateButtons(ship3);
+            }else
+            {
+                generateButtons(superShip1);
+                generateButtons(superShip2);
+                generateButtons(superShip3);
+            }                                             
+            FormClosed += PlacementForm_FormClosed;
+        }
 
-            foreach (var item in _placeableObjects)
+        private void generateButtons(PlaceableObject[] ship)
+        {
+            foreach (var item in ship)
             {
                 var button = new Button();
                 var buttonId = Guid.NewGuid();
@@ -53,8 +97,6 @@ namespace BattleshipsCoreClient
                 PlaceableObjectPanel.Controls.Add(button);
                 PlaceableObjectButtons.Add(buttonId, new PlaceableObjectButton(button, item, item.MaximumCount));
             }
-
-            FormClosed += PlacementForm_FormClosed;
         }
 
         private void PlacementForm_FormClosed(object? sender, FormClosedEventArgs e)
@@ -170,6 +212,15 @@ namespace BattleshipsCoreClient
 
             SelectedPlaceableObject = placeableObjectButton;
         }
+        private void ChangeLevel_Click(object? sender, EventArgs e)
+        {
+            if (InputDisabled) return;
+            var button = (Button)sender!;
+            var buttonId = Guid.Parse(button.Name);
+
+            
+
+        }
 
         private void Button_MouseHover(object? sender, EventArgs e)
         {
@@ -251,8 +302,7 @@ namespace BattleshipsCoreClient
             {
                 MessageBox.Show("Other player has not finished setting up.");
                 return;
-            }
-
+            }            
             InputDisabled = true;
             await Program.ShootingForm.ShowWindow();
         }
@@ -328,7 +378,7 @@ namespace BattleshipsCoreClient
             SelectedPlaceableObject = null;
             PlaceableObjectButtons.Clear();
             SelectedTileGroups.Clear();
-            HoveredButtonPositions.Clear();
+            HoveredButtonPositions.Clear();            
         }
     }
 }

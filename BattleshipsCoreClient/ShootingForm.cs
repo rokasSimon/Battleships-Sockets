@@ -8,7 +8,7 @@ using BattleshipsCoreClient.Extensions;
 namespace BattleshipsCoreClient
 {
     public partial class ShootingForm : Form
-    {
+    {        
         private GameMapData? OriginalMapData { get; set; }
         private Tile[,]? CurrentGrid { get; set; }
         private bool InputDisabled { get; set; }
@@ -250,7 +250,7 @@ namespace BattleshipsCoreClient
 
         private void Win()
         {
-            ClearData();
+            ClearData();            
             MessageBox.Show("You won!", "Game Over");
 
             GameClientManager.Instance.LeaveSession();

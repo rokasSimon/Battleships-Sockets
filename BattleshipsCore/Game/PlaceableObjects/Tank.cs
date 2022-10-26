@@ -1,16 +1,16 @@
-﻿using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.GameGrid;
 using Newtonsoft.Json;
 
 namespace BattleshipsCore.Game.PlaceableObjects
 {
-    public class Ship : PlaceableObject
+    public class Tank : PlaceableObject
     {
         [JsonProperty("t")]
-        public override TileType Type => TileType.Ship;
+        public override TileType Type => TileType.Tank;
 
         public int Length { get; init; }
 
-        public Ship(string name, int max, int length) : base(name, max)
+        public Tank(string name, int max, int length) : base(name, max)
         {
             Length = length;
         }
@@ -82,6 +82,6 @@ namespace BattleshipsCore.Game.PlaceableObjects
                 return false;
 
             return true;
-        } 
+        }        
     }
 }
