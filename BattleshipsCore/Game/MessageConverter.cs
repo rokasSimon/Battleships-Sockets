@@ -148,17 +148,7 @@ namespace BattleshipsCore.Game
                     ships.GenerateShip();
                     placeableObjects.Add(new PlacedObject(ships, tiles));
                 }                                
-            }
-            //not sure is here need to add sth
-            /*foreach (var item in val["PlacedObjects"])
-            {                
-                var tiles = JsonConvert.DeserializeObject<List<Vec2>>(item["Tiles"].ToString());
-
-                var objVal = item["Obj"];
-                var obj = new Tank(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
-
-                placeableObjects.Add(new PlacedObject(obj, tiles));
-            }*/
+            }           
 
             var request = new SetTilesRequest(playerName, placeableObjects);
 
