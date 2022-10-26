@@ -37,13 +37,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
         public override Product_Level_Two_Ships CreateLevel2(int type, string name, int length, int max)
         {
-            if(type == 1){
+            if(type == 4){
                 return new SuperShip1(length, name, max, type);
             }
-            else if(type == 2){
+            else if(type == 5){
                 return new SuperShip2(length, name, max, type);
             }
-            else if(type == 3){
+            else if(type == 6){
                 return new SuperShip3(length, name, max, type);
             }
             return null;

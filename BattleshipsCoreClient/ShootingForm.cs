@@ -253,8 +253,10 @@ namespace BattleshipsCoreClient
             ClearData();            
             MessageBox.Show("You won!", "Game Over");
 
+            Program.PlacementForm = new PlacementForm(2);
             GameClientManager.Instance.LeaveSession();
             Program.SessionForm.ShowWindow();
+            
         }
 
         private void Lose()
@@ -262,8 +264,10 @@ namespace BattleshipsCoreClient
             ClearData();
             MessageBox.Show("You lost!", "Game Over");
 
+            Program.PlacementForm = new PlacementForm(2);
             GameClientManager.Instance.LeaveSession();
             Program.SessionForm.ShowWindow();
+            
         }
 
         private void QuitGame()

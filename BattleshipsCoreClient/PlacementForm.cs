@@ -14,17 +14,7 @@ namespace BattleshipsCoreClient
         private Tile[,]? CurrentGrid { get; set; } 
         private Vec2 GridSize => new(CurrentGrid!.GetLength(1), CurrentGrid!.GetLength(0));
 
-        private int level1 = 1;
-
-        public int Getlevel()
-        {
-            return level1;
-        }
-
-        public void Setlevel(int value)
-        {
-            level1 = value;
-        }
+        //need to make level toggling somehow        
 
         private PlaceableObjectButton? SelectedPlaceableObject { get; set; }
         private Dictionary<Guid, PlaceableObjectButton> PlaceableObjectButtons { get; set; }
@@ -47,25 +37,25 @@ namespace BattleshipsCoreClient
         };
         private readonly PlaceableObject[] superShip1 = new[]
         {
-            new SuperShip1(1, "S1", 8, 1)                                   
+            new SuperShip1(1, "S1", 8, 4)                                   
         };
         private readonly PlaceableObject[] superShip2 = new[]
         {
-            new SuperShip1(4, "S2", 2, 2)                                   
+            new SuperShip2(4, "S2", 2, 5)                                   
         };
         private readonly PlaceableObject[] superShip3 = new[]
         {
-            new SuperShip1(5, "S3", 4, 3)                                   
+            new SuperShip3(5, "S3", 4, 6)                                   
         };
 
-        public PlacementForm()
+        public PlacementForm(int level)
         {            
             InputDisabled = false;
             HoveredButtonPositions = new List<Vec2>();
             SelectedTileGroups = new List<SelectedObject>();
             PlaceableObjectButtons = new Dictionary<Guid, PlaceableObjectButton>();
             InitializeComponent();
-            if(Getlevel() == 1)
+            if(level == 1)
             {
                 generateButtons(ship1);
                 generateButtons(ship2);
@@ -75,7 +65,7 @@ namespace BattleshipsCoreClient
                 generateButtons(superShip1);
                 generateButtons(superShip2);
                 generateButtons(superShip3);
-            }                                             
+            }                                                        
             FormClosed += PlacementForm_FormClosed;
         }
 

@@ -133,21 +133,21 @@ namespace BattleshipsCore.Game
             foreach (var item in val["PlacedObjects"])
             {
                 var tiles = JsonConvert.DeserializeObject<List<Vec2>>(item["Tiles"].ToString());
-                var objVal = item["Obj"];
-                //if level == 1
-                /*Level1Factory lv = new Level1Factory();
-                var ships = lv.CreateLevel1(objVal.Value<int>("ShipType"), objVal.Value<string>("Name"), objVal.Value<int>("Length"), objVal.Value<int>("MaximumCount"));
-                ships.GenerateShip();*/
-
-                //if level == 2
-                Level2Factory lv = new Level2Factory();
-                var ships = lv.CreateLevel2(objVal.Value<int>("ShipType"), objVal.Value<string>("Name"), objVal.Value<int>("Length"), objVal.Value<int>("MaximumCount"));
-                ships.GenerateShip();
-                
-                //reikia padaryt, kad skirtingai kreiptusi i kuri nors lygi
-                //var obj = new Ship(objVal.Value<string>("Name"), objVal.Value<int>("MaximumCount"), objVal.Value<int>("Length"));
-
-                placeableObjects.Add(new PlacedObject(ships, tiles));
+                var objVal = item["Obj"];               
+                if(objVal.Value<int>("ShipType") > 3)
+                {
+                    Level2Factory lv = new Level2Factory();
+                    var ships = lv.CreateLevel2(objVal.Value<int>("ShipType"), objVal.Value<string>("Name"), objVal.Value<int>("Length"), objVal.Value<int>("MaximumCount"));
+                    ships.GenerateShip();
+                    placeableObjects.Add(new PlacedObject(ships, tiles));
+                }
+                else
+                {
+                    Level1Factory lv = new Level1Factory();
+                    var ships = lv.CreateLevel1(objVal.Value<int>("ShipType"), objVal.Value<string>("Name"), objVal.Value<int>("Length"), objVal.Value<int>("MaximumCount"));
+                    ships.GenerateShip();
+                    placeableObjects.Add(new PlacedObject(ships, tiles));
+                }                                
             }
             //not sure is here need to add sth
             /*foreach (var item in val["PlacedObjects"])
