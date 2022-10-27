@@ -104,14 +104,7 @@ namespace BattleshipsCoreClient
             {
                 case GameState.Won: await WinAsync(); break;
                 case GameState.Lost: await LoseAsync(); break;
-                case GameState.YourTurn:
-                    {
-                        foreach (var tu in updates)
-                        {
-                            Program.PlacementForm.UpdateTile(tu);
-                        }
-                        GrantTurn();
-                    } break;
+                case GameState.YourTurn: GrantTurn(); break;
                 case GameState.EnemyTurn:
                     {
                         foreach (var tu in updates)

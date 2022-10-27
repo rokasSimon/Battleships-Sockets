@@ -38,6 +38,7 @@
         StartedBattle,
 
         SetTiles,
+        UnsetTiles,
         Shoot,
 
         NewSessionsAdded,

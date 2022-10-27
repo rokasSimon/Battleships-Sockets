@@ -30,5 +30,14 @@
 
             return _items[_top];
         }
+
+        public T? Peek()
+        {
+            if (_count == 0) return null;
+
+            var idx = (_items.Length + _top - 1) % _items.Length;
+
+            return _items[idx];
+        }
     }
 }

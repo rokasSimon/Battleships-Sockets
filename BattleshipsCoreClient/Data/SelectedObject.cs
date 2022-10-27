@@ -1,15 +1,16 @@
 ﻿using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.PlaceableObjects;
 
 namespace BattleshipsCoreClient.Data
 {
     public class SelectedObject
     {
-        public PlaceableObjectButton ButtonData { get; set; }
+        public PlaceableObject ButtonData { get; set; }
         public List<Vec2> Tiles { get; set; }
 
-        public SelectedObject(PlaceableObjectButton buttonData, List<Vec2> tiles)
+        public SelectedObject(PlaceableObject placeableObject, List<Vec2> tiles)
         {
-            ButtonData = buttonData;
+            ButtonData = placeableObject;
             Tiles = tiles;
         }
     }

@@ -20,10 +20,22 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
         public void Rotate()
         {
-            if (Rotation == Rotation.Left) Rotation = Rotation.Top;
-            else if (Rotation == Rotation.Top) Rotation = Rotation.Right;
-            else if (Rotation == Rotation.Right) Rotation = Rotation.Bottom;
-            else Rotation = Rotation.Left;
+            Rotate(90);
+        }
+
+        public void Rotate(int degrees)
+        {
+            var currentDegrees = (int)Rotation * 90;
+            var totalRotation = (currentDegrees + degrees) % 360;
+
+            if (totalRotation < 0)
+            {
+                totalRotation = 360 + totalRotation;
+            }
+
+            var nextQuarter = totalRotation / 90;
+
+            Rotation = (Rotation)nextQuarter;
         }
 
         public abstract List<Vec2> HoverTiles(Vec2 gridSize, Vec2 position);
