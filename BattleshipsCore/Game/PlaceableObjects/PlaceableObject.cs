@@ -36,6 +36,5 @@ namespace BattleshipsCore.Game.PlaceableObjects
         Top,
         Right,
         Bottom,
-    }  
+    }
 }
-

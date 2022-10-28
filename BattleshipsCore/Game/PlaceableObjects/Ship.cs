@@ -82,6 +82,6 @@ namespace BattleshipsCore.Game.PlaceableObjects
                 return false;
 
             return true;
-        } 
+        }
     }
 }
