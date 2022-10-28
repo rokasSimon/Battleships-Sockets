@@ -125,7 +125,7 @@ namespace BattleshipsCoreClient
                 specificButton.Name = $"{y}_{x}";
 
                 specificButton.Click += Button_Click;
-                specificButton.MouseDoubleClick += Button_MouseRightClick;
+                specificButton.MouseDown += Button_MouseRightClick;
                 states.Add(shoot);
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to shoot")) && e.Button == System.Windows.Forms.MouseButtons.Right)
@@ -137,7 +137,7 @@ namespace BattleshipsCoreClient
                 specificButtonShip.Name = $"{y}_{x}";
 
                 specificButtonShip.Click += Button_Click;
-                specificButtonShip.MouseDoubleClick += Button_MouseRightClick;
+                specificButtonShip.MouseDown += Button_MouseRightClick;
                 int index = states.FindIndex(s => s.Equals(shoot));
 
                 if (index != -1)
@@ -152,7 +152,7 @@ namespace BattleshipsCoreClient
                 specificButtonTank.Name = $"{y}_{x}";
 
                 specificButtonTank.Click += Button_Click;
-                specificButtonTank.MouseDoubleClick += Button_MouseRightClick;
+                specificButtonTank.MouseDown += Button_MouseRightClick;
                 int index = states.FindIndex(s => s.Equals(shoot2));
 
                 if (index != -1)
@@ -167,7 +167,7 @@ namespace BattleshipsCoreClient
                 specificButton.Name = $"{y}_{x}";
 
                 specificButton.Click += Button_Click;
-                specificButton.MouseDoubleClick += Button_MouseRightClick;
+                specificButton.MouseDown += Button_MouseRightClick;
                 int index = states.FindIndex(s => s.Equals(shoot3));
 
                 if (index != -1)
