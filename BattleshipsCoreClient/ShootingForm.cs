@@ -1,4 +1,4 @@
-﻿using BattleshipsCore.Data;
+using BattleshipsCore.Data;
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.ShootingStrategy;
@@ -16,9 +16,8 @@ namespace BattleshipsCoreClient
         private Tile[,]? CurrentGrid { get; set; }
         private bool InputDisabled { get; set; }
 
-        private ShootingStrategy shootingStrategy { get; set; }
         List<SaveTileState> states = new List<SaveTileState>();
-
+        private ShootingStrategy shootingStrategy { get; set; }
 
         public ShootingForm()
         {
@@ -94,18 +93,13 @@ namespace BattleshipsCoreClient
             int i = int.Parse(coordinates[0]);
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
+            
 
+            var targetPositions = shootingStrategy.TargetPositions(pos);
 
-            var success = await Shoot(pos);
-
-            if (success)
-            {
-                await TakeAwayTurn();
-            }
-            else
-            {
-                MessageBox.Show("Could not shoot tile.", "Error");
-            }
+            await GameClientManager.Instance.Client!
+                .SendMessageAsync(
+                new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
         }
         private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
         {
@@ -181,18 +175,6 @@ namespace BattleshipsCoreClient
             }
         }
 
-        private void GrantTurn()
-        {
-            const string YourTurnText = "Your Turn";
-
-            var targetPositions = shootingStrategy.TargetPositions(pos);
-
-
-            await GameClientManager.Instance.Client!
-                .SendMessageAsync(
-                new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
-        }
-
         private async void UpdateGame(List<TileUpdate> updates, GameState newGameState)
         {
             switch (newGameState)
@@ -206,7 +188,8 @@ namespace BattleshipsCoreClient
                             Program.PlacementForm.UpdateTile(tu);
                         }
                         GrantTurn();
-                    } break;
+                    }
+                    break;
                 case GameState.EnemyTurn:
                     {
                         foreach (var tu in updates)
@@ -214,7 +197,8 @@ namespace BattleshipsCoreClient
                             UpdateTile(tu);
                         }
                         TakeAwayTurn();
-                    } break;
+                    }
+                    break;
                 default: await QuitGameAsync(); return;
             }
         }
@@ -274,7 +258,13 @@ namespace BattleshipsCoreClient
             await Program.LeaveShootingForm();
         }
 
-        
+        private void GrantTurn()
+        {
+            const string YourTurnText = "Your Turn";
+
+            InputDisabled = false;
+            TurnLabel.Text = YourTurnText;
+        }
 
         private void TakeAwayTurn()
         {
@@ -290,7 +280,8 @@ namespace BattleshipsCoreClient
             InputDisabled = true;
         }
 
-        private void SetSingleTileShootingStrategy(object sender, EventArgs e) {
+        private void SetSingleTileShootingStrategy(object sender, EventArgs e)
+        {
             shootingStrategy = new SingleTileShooting();
             label2.Text = " - SingleTileShooting";
         }
