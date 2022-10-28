@@ -10,7 +10,6 @@ namespace BattleshipsCoreClient.Extensions
             {
                 TileType.Ground => Color.LightGreen,
                 TileType.Ship => Color.Blue,
-                TileType.Tank=> Color.Brown,
                 TileType.Hit => Color.Red,
                 TileType.Miss => Color.DarkGray,
                 TileType.Unavailable => Color.LightGray,

@@ -154,10 +154,9 @@ namespace BattleshipsCoreClient
 
         private async Task WinAsync()
         {
-            ClearData();            
+            ClearData();
             MessageBox.Show("You won!", "Game Over");
 
-            Program.PlacementForm = new PlacementForm(2);                       
             await GameClientManager.Instance.LeaveSessionAsync();
             await Program.LeaveShootingForm();
         }
@@ -167,10 +166,8 @@ namespace BattleshipsCoreClient
             ClearData();
             MessageBox.Show("You lost!", "Game Over");
 
-            Program.PlacementForm = new PlacementForm(2);          
             await GameClientManager.Instance.LeaveSessionAsync();
             await Program.LeaveShootingForm();
-
         }
 
         private async Task QuitGameAsync()

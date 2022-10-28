@@ -13,7 +13,7 @@ namespace BattleshipsCoreClient
         public static SessionForm SessionForm;
         public static ActiveSessionForm ActiveSessionForm;
         public static PlacementForm PlacementForm;
-        public static ShootingForm ShootingForm;       
+        public static ShootingForm ShootingForm;
 
         public static GameClientManager _gm;
 
@@ -27,8 +27,7 @@ namespace BattleshipsCoreClient
             ConnectionForm = new Start();
             SessionForm = new SessionForm();
             ActiveSessionForm = new ActiveSessionForm();
-
-            PlacementForm = new PlacementForm(1);           
+            PlacementForm = new PlacementForm();
             ShootingForm = new ShootingForm();
             _gm = GameClientManager.Instance;
 

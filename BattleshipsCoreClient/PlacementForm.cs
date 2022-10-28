@@ -19,7 +19,6 @@ namespace BattleshipsCoreClient
         private Tile[,]? CurrentGrid { get; set; } 
         private Vec2 GridSize => new(CurrentGrid!.GetLength(1), CurrentGrid!.GetLength(0));
 
-
         private DropoutStack<ICommand> ExecutedCommandStack { get; set; }
         private PlaceableObjectButton? SelectedPlaceableObject { get; set; }
         private Dictionary<Guid, PlaceableObjectButton> PlaceableObjectButtons { get; set; }
@@ -28,57 +27,22 @@ namespace BattleshipsCoreClient
 
         private bool InputDisabled { get; set; }
 
-        private readonly PlaceableObject[] ship1 = new[]
+        private readonly PlaceableObject[] _placeableObjects = new[]
         {
-            new Ship1(1, "Ship A1", 3, 1)                                   
-        };
-        private readonly PlaceableObject[] ship2 = new[]
-        {
-            new Ship2(2, "Ship A2", 2, 2)                                   
-        };
-        private readonly PlaceableObject[] ship3 = new[]
-        {
-            new Ship3(3, "Ship A3", 1, 3)                                   
-        };
-        private readonly PlaceableObject[] superShip1 = new[]
-        {
-            new SuperShip1(1, "Super Ship S1", 8, 4)                                   
-        };
-        private readonly PlaceableObject[] superShip2 = new[]
-        {
-            new SuperShip2(4, "Super Ship S2", 2, 5)                                   
-        };
-        private readonly PlaceableObject[] superShip3 = new[]
-        {
-            new SuperShip3(5, "Super Ship S3", 4, 6)                                   
+            new Ship("One Tile Ship", 3, 1),
+            new Ship("Two Tile Ship", 2, 2),
+            new Ship("Three Tile Ship", 1, 3),
+            new Ship("Four Tile Ship", 1, 4),
         };
 
-        public PlacementForm(int level)
-        {            
+        public PlacementForm()
+        {
             InputDisabled = false;
             HoveredButtonPositions = new List<Vec2>();
             SelectedTileGroups = new List<SelectedObject>();
             PlaceableObjectButtons = new Dictionary<Guid, PlaceableObjectButton>();
             ExecutedCommandStack = new DropoutStack<ICommand>(MaximumRememberedCommands);
             InitializeComponent();
-            if(level == 1)
-            {
-                generateButtons(ship1);
-                generateButtons(ship2);
-                generateButtons(ship3);
-            }else
-            {
-                generateButtons(superShip1);
-                generateButtons(superShip2);
-                generateButtons(superShip3);
-            }                                                        
-            FormClosed += PlacementForm_FormClosed;
-        }
-
-
-        private void generateButtons(PlaceableObject[] ship)
-        {
-            foreach (var item in ship)
 
             InitializePlaceableObjects();
 
@@ -209,15 +173,6 @@ namespace BattleshipsCoreClient
 
             SelectedPlaceableObject = placeableObjectButton;
         }
-        private void ChangeLevel_Click(object? sender, EventArgs e)
-        {
-            if (InputDisabled) return;
-            var button = (Button)sender!;
-            var buttonId = Guid.Parse(button.Name);
-
-            
-
-        }
 
         private void Button_MouseHover(object? sender, EventArgs e)
         {
@@ -298,8 +253,8 @@ namespace BattleshipsCoreClient
             //    .Client!
             //    .SendCommandAsync<StartBattleRequest, OkResponse>(
             //    new StartBattleRequest(GameClientManager.Instance.PlayerName!));
-          
-          //if (startBattleResponse == null)
+
+            //if (startBattleResponse == null)
             //{
             //    MessageBox.Show("Other player has not finished setting up.");
             //    return;
@@ -388,7 +343,7 @@ namespace BattleshipsCoreClient
             SelectedPlaceableObject = null;
             PlaceableObjectButtons.Clear();
             SelectedTileGroups.Clear();
-            HoveredButtonPositions.Clear();            
+            HoveredButtonPositions.Clear();
         }
 
         private void UndoButton_Click(object sender, EventArgs e)
