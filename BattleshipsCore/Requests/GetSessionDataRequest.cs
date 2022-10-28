@@ -15,13 +15,13 @@ namespace BattleshipsCore.Requests
             SessionKey = sessionKey;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var session = ServerGameStateManager.Instance.GetSession(SessionKey);
 
-            if (session == null) return new FailResponse();
+            if (session == null) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
-            return new SendSessionDataResponse
+            return new List<(Message, Guid)> { (new SendSessionDataResponse
             {
                 SessionData = new GameSessionData
                 {
@@ -30,7 +30,7 @@ namespace BattleshipsCore.Requests
                     PlayerNames = session.PlayerNames,
                     Active = session.Active,
                 }
-            };
+            }, connectionId) };
         }
     }
 }

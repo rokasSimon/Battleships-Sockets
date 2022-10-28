@@ -47,6 +47,9 @@ namespace BattleshipsCore.Game
         {
             if (!_players.ContainsKey(player.Name)) return false;
 
+            var p = _players[player.Name];
+            p.JoinedSession = null;
+
             _players.Remove(player.Name);
 
             return true;
@@ -141,31 +144,31 @@ namespace BattleshipsCore.Game
             return true;
         }
 
-        public (GameState, List<TileUpdate?>) GetTurnFor(string playerName)
+        public (GameState, List<TileUpdate>) GetTurnFor(string playerName)
         {
             if (_playerMaps.TryGetValue(playerName, out var gameData))
             {
                 return (gameData.GameState, gameData.TileToUpdate);
             }
 
-            return (GameState.Unknown, new List<TileUpdate?>());
+            return (GameState.Unknown, new List<TileUpdate>());
         }
 
-        public (GameState, List<TileUpdate?>) Shoot(string playerName, List<Vec2> positions)
+        public (GameState, List<TileUpdate>) Shoot(string playerName, List<Vec2> positions)
         {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, new List<TileUpdate?>());
+            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, new List<TileUpdate>());
 
             var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, new List<TileUpdate?>());
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, new List<TileUpdate?>());
+            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, new List<TileUpdate>());
+            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, new List<TileUpdate>());
 
             var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, new List<TileUpdate?>());
+            if (opponentMapData == null) return (GameState.Unknown, new List<TileUpdate>());
 
-            var list = new List<TileUpdate?>();
+            var list = new List<TileUpdate>();
 
             foreach (var position in positions) {
-                if(!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, new List<TileUpdate?>());
+                if(!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, new List<TileUpdate>());
 
                 var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
                 var newTileType = shotTile switch

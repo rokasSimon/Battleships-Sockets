@@ -6,11 +6,11 @@ namespace BattleshipsCore.Game
     {
         public override MessageType Type => MessageType.GetSessionList;
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var sessionList = ServerGameStateManager.Instance.GetSessionList();
 
-            return new SendSessionListResponse(sessionList);
+            return new List<(Message, Guid)> { (new SendSessionListResponse(sessionList), connectionId) };
         }
     }
 }

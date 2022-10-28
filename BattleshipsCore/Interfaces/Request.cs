@@ -6,6 +6,6 @@ namespace BattleshipsCore.Interfaces
     [JsonConverter(typeof(MessageConverter))]
     public abstract class Request : Message
     {
-        public abstract Message Execute();
+        public abstract List<(Message, Guid)> Execute(Guid connectionId);
     }
 }

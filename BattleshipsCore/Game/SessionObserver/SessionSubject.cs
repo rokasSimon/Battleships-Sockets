@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BattleshipsCore.Server;
 
 namespace BattleshipsCore.Game.SessionObserver
 {
     public class SessionSubject
     {
-        private int _SessionCount;
+        private int _sessionCount;
         public int SessionCount
         {
-            get { return this._SessionCount; }
-            set { this._SessionCount = value; Notify(); }
+            get { return _sessionCount; }
+            set { _sessionCount = value; Notify(); }
         }
 
-        private List<ISessionObserver> _listeners = new List<ISessionObserver>();
+        private List<ISessionObserver> _listeners = new();
 
         public void Attach(ISessionObserver listener)
         {
@@ -31,7 +27,8 @@ namespace BattleshipsCore.Game.SessionObserver
             {
                 listener.Update(this);
             }
-            Console.WriteLine("session listeners notified");
+
+            ServerLogger.Instance.LogInfo("Session listeners notified;");
         }
 
     }

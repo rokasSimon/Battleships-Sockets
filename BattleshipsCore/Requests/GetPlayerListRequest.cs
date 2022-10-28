@@ -12,11 +12,11 @@ namespace BattleshipsCore.Game
             ExcludedPlayerName = excludedPlayerName;
         }
 
-        public override Message Execute()
+        public override List<(Message, Guid)> Execute(Guid connectionId)
         {
             var enemies = ServerGameStateManager.Instance.GetAvailablePlayers(ExcludedPlayerName);
 
-            return new SendPlayerListResponse(enemies);
+            return new List<(Message, Guid)> { (new SendPlayerListResponse(enemies), connectionId) };
         }
     }
 }

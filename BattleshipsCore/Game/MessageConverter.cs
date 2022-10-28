@@ -72,6 +72,7 @@ namespace BattleshipsCore.Game
             {
                 MessageType.Ok => ToMessage<OkResponse>(jo),
                 MessageType.Fail => ToMessage<FailResponse>(jo),
+
                 MessageType.SendPlayerList => ToMessage<SendPlayerListResponse>(jo),
                 MessageType.SendSessionKey => ToMessage<SendSessionKeyResponse>(jo),
                 MessageType.SendSessionList => ToMessage<SendSessionListResponse>(jo),
@@ -88,14 +89,24 @@ namespace BattleshipsCore.Game
                 MessageType.GetMyTurn => ToCommand<GetMyTurnRequest>(jo),
 
                 MessageType.JoinServer => ToCommand<JoinServerRequest>(jo),
+                MessageType.JoinedServer => ToMessage<JoinedServerResponse>(jo),
+
                 MessageType.Disconnect => ToCommand<DisconnectRequest>(jo),
+                MessageType.Disconnected => ToMessage<DisconnectResponse>(jo),
 
                 MessageType.JoinSession => ToCommand<JoinSessionRequest>(jo),
+                MessageType.JoinedSession => ToMessage<JoinedSessionResponse>(jo),
+
                 MessageType.LeaveSession => ToCommand<LeaveSessionRequest>(jo),
+                MessageType.LeftSession => ToMessage<LeftSessionResponse>(jo),
+
                 MessageType.CreateSession => ToCommand<CreateSessionRequest>(jo),
 
                 MessageType.StartGame => ToCommand<StartGameRequest>(jo),
+                MessageType.StartedGame => ToMessage<StartedGameResponse>(jo),
+
                 MessageType.StartBattle => ToCommand<StartBattleRequest>(jo),
+                MessageType.StartedBattle => ToMessage<StartedBattleResponse>(jo),
 
                 MessageType.SetTiles => HandleSetTiles(jo),
                 MessageType.Shoot => ToCommand<ShootRequest>(jo),
