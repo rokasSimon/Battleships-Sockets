@@ -274,13 +274,7 @@ namespace BattleshipsCoreClient
             await Program.LeaveShootingForm();
         }
 
-        private void GrantTurn()
-        {
-            const string YourTurnText = "Your Turn";
-
-            InputDisabled = false;
-            TurnLabel.Text = YourTurnText;
-        }
+        
 
         private void TakeAwayTurn()
         {
