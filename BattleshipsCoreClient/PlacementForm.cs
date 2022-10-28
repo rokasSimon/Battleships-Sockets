@@ -27,15 +27,32 @@ namespace BattleshipsCoreClient
 
         private bool InputDisabled { get; set; }
 
-        private readonly PlaceableObject[] _placeableObjects = new[]
+        private readonly PlaceableObject[] ship1 = new[]
+        {           
+            new Ship1(1, "Ship A1", 3, 1)                                   
+        };
+        private readonly PlaceableObject[] ship2 = new[]
         {
-            new Ship("One Tile Ship", 3, 1),
-            new Ship("Two Tile Ship", 2, 2),
-            new Ship("Three Tile Ship", 1, 3),
-            new Ship("Four Tile Ship", 1, 4),
+            new Ship2(2, "Ship A2", 2, 2)                                   
+        };
+        private readonly PlaceableObject[] ship3 = new[]
+        {
+            new Ship3(3, "Ship A3", 1, 3)                                   
+        };
+        private readonly PlaceableObject[] superShip1 = new[]
+        {
+            new SuperShip1(1, "Super Ship S1", 8, 4)                                   
+        };
+        private readonly PlaceableObject[] superShip2 = new[]
+        {
+            new SuperShip2(4, "Super Ship S2", 2, 5)                                   
+        };
+        private readonly PlaceableObject[] superShip3 = new[]
+        {
+            new SuperShip3(5, "Super Ship S3", 4, 6)                                   
         };
 
-        public PlacementForm()
+        public PlacementForm(int level)
         {
             InputDisabled = false;
             HoveredButtonPositions = new List<Vec2>();
@@ -44,9 +61,18 @@ namespace BattleshipsCoreClient
             ExecutedCommandStack = new DropoutStack<ICommand>(MaximumRememberedCommands);
             InitializeComponent();
 
-            InitializePlaceableObjects();
-
-            FormClosed += PlacementForm_FormClosed;
+            if(level == 1)
+            {
+                InitializePlaceableObjects(ship1);
+                InitializePlaceableObjects(ship2);
+                InitializePlaceableObjects(ship3);
+            }else
+            {
+                InitializePlaceableObjects(superShip1);
+                InitializePlaceableObjects(superShip2);
+                InitializePlaceableObjects(superShip3);
+            }                                                        
+            FormClosed += PlacementForm_FormClosed;            
         }
 
         public void UpdateTile(TileUpdate update)
@@ -57,9 +83,9 @@ namespace BattleshipsCoreClient
             ColorTiles(tiles, update.NewType.ToColor());
         }
 
-        private void InitializePlaceableObjects()
+        private void InitializePlaceableObjects(PlaceableObject[] ship)
         {
-            foreach (var item in _placeableObjects)
+            foreach (var item in ship)
             {
                 var button = new Button();
                 var buttonId = Guid.NewGuid();
