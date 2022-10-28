@@ -1,9 +1,10 @@
-﻿using BattleshipsCore.Data;
+using BattleshipsCore.Data;
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.ShootingStrategy;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
+using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
 using BattleshipsCoreClient.Observer;
 
@@ -15,6 +16,7 @@ namespace BattleshipsCoreClient
         private Tile[,]? CurrentGrid { get; set; }
         private bool InputDisabled { get; set; }
 
+        List<SaveTileState> states = new List<SaveTileState>();
         private ShootingStrategy shootingStrategy { get; set; }
 
         public ShootingForm()
@@ -74,6 +76,7 @@ namespace BattleshipsCoreClient
                     button.Margin = new Padding(0);
 
                     button.Click += Button_Click;
+                    button.MouseDown += Button_MouseRightClick;
 
                     TileGrid.Controls.Add(button, j, i);
                 }
@@ -90,12 +93,86 @@ namespace BattleshipsCoreClient
             int i = int.Parse(coordinates[0]);
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
+            
 
             var targetPositions = shootingStrategy.TargetPositions(pos);
 
             await GameClientManager.Instance.Client!
                 .SendMessageAsync(
                 new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
+        }
+        private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
+        {
+            //MessageBox.Show("Right click");
+            if (InputDisabled) return;
+
+            var button = (Button)sender!;
+            var coordinates = button!.Name.Split('_');
+
+            int x = int.Parse(coordinates[0]);
+            int y = int.Parse(coordinates[1]);
+            var pos = new Vec2(x, y);
+            SaveTileState shoot = new SaveTileState(x, y, "marked to shoot");
+            SaveTileState shoot2 = new SaveTileState(x, y, "marked to suspect ship");
+            SaveTileState shoot3 = new SaveTileState(x, y, "marked to suspect tank");
+
+
+            if (!states.Any(x => x.x.Equals(x)) && !states.Any(x => x.y.Equals(y)) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Marked to shoot ! ");
+                var specificButton = new MarkedToShoot(button);
+
+                specificButton.Name = $"{y}_{x}";
+
+                specificButton.Click += Button_Click;
+                specificButton.MouseDown += Button_MouseRightClick;
+                states.Add(shoot);
+            }
+            else if (states.Contains(new SaveTileState(x, y, "marked to shoot")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Marked to suspect ship ! ");
+
+                var specificButtonShip = new SuspectShip(button);
+
+                specificButtonShip.Name = $"{y}_{x}";
+
+                specificButtonShip.Click += Button_Click;
+                specificButtonShip.MouseDown += Button_MouseRightClick;
+                int index = states.FindIndex(s => s.Equals(shoot));
+
+                if (index != -1)
+                    states[index] = shoot2;
+            }
+            else if (states.Contains(new SaveTileState(x, y, "marked to suspect ship")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Marked to suspect tank ! ");
+
+                var specificButtonTank = new SuspectTank(button);
+
+                specificButtonTank.Name = $"{y}_{x}";
+
+                specificButtonTank.Click += Button_Click;
+                specificButtonTank.MouseDown += Button_MouseRightClick;
+                int index = states.FindIndex(s => s.Equals(shoot2));
+
+                if (index != -1)
+                    states[index] = shoot3;
+            }
+            else if (states.Contains(new SaveTileState(x, y, "marked to suspect tank")) && e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                MessageBox.Show("Decorator: Market to shoot ! ");
+
+                var specificButton = new MarkedToShoot(button);
+
+                specificButton.Name = $"{y}_{x}";
+
+                specificButton.Click += Button_Click;
+                specificButton.MouseDown += Button_MouseRightClick;
+                int index = states.FindIndex(s => s.Equals(shoot3));
+
+                if (index != -1)
+                    states[index] = shoot;
+            }
         }
 
         private async void UpdateGame(List<TileUpdate> updates, GameState newGameState)
@@ -111,7 +188,8 @@ namespace BattleshipsCoreClient
                             Program.PlacementForm.UpdateTile(tu);
                         }
                         GrantTurn();
-                    } break;
+                    }
+                    break;
                 case GameState.EnemyTurn:
                     {
                         foreach (var tu in updates)
@@ -119,7 +197,8 @@ namespace BattleshipsCoreClient
                             UpdateTile(tu);
                         }
                         TakeAwayTurn();
-                    } break;
+                    }
+                    break;
                 default: await QuitGameAsync(); return;
             }
         }
@@ -201,7 +280,8 @@ namespace BattleshipsCoreClient
             InputDisabled = true;
         }
 
-        private void SetSingleTileShootingStrategy(object sender, EventArgs e) {
+        private void SetSingleTileShootingStrategy(object sender, EventArgs e)
+        {
             shootingStrategy = new SingleTileShooting();
             label2.Text = " - SingleTileShooting";
         }
