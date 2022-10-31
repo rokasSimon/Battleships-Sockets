@@ -27,7 +27,7 @@ namespace BattleshipsCoreClient
             ConnectionForm = new Start();
             SessionForm = new SessionForm();
             ActiveSessionForm = new ActiveSessionForm();
-            PlacementForm = new PlacementForm();
+            PlacementForm = new PlacementForm(1);
             ShootingForm = new ShootingForm();
             _gm = GameClientManager.Instance;
 
