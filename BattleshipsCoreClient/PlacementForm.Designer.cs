@@ -50,13 +50,13 @@
             this.TileGrid.RowCount = 2;
             this.TileGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TileGrid.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.TileGrid.Size = new System.Drawing.Size(323, 449);
+            this.TileGrid.Size = new System.Drawing.Size(446, 535);
             this.TileGrid.TabIndex = 0;
             // 
             // LeaveButton
             // 
             this.LeaveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.LeaveButton.Location = new System.Drawing.Point(341, 432);
+            this.LeaveButton.Location = new System.Drawing.Point(464, 518);
             this.LeaveButton.Name = "LeaveButton";
             this.LeaveButton.Size = new System.Drawing.Size(86, 29);
             this.LeaveButton.TabIndex = 1;
@@ -67,7 +67,7 @@
             // PlayButton
             // 
             this.PlayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.PlayButton.Location = new System.Drawing.Point(433, 432);
+            this.PlayButton.Location = new System.Drawing.Point(556, 518);
             this.PlayButton.Name = "PlayButton";
             this.PlayButton.Size = new System.Drawing.Size(92, 29);
             this.PlayButton.TabIndex = 2;
@@ -81,15 +81,15 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.PlaceableObjectPanel.AutoScroll = true;
             this.PlaceableObjectPanel.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.PlaceableObjectPanel.Location = new System.Drawing.Point(341, 12);
+            this.PlaceableObjectPanel.Location = new System.Drawing.Point(464, 12);
             this.PlaceableObjectPanel.Name = "PlaceableObjectPanel";
-            this.PlaceableObjectPanel.Size = new System.Drawing.Size(184, 348);
+            this.PlaceableObjectPanel.Size = new System.Drawing.Size(184, 434);
             this.PlaceableObjectPanel.TabIndex = 3;
             // 
             // RotateButton
             // 
             this.RotateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.RotateButton.Location = new System.Drawing.Point(341, 399);
+            this.RotateButton.Location = new System.Drawing.Point(464, 485);
             this.RotateButton.Name = "RotateButton";
             this.RotateButton.Size = new System.Drawing.Size(86, 27);
             this.RotateButton.TabIndex = 4;
@@ -100,7 +100,7 @@
             // SaveTileButton
             // 
             this.SaveTileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.SaveTileButton.Location = new System.Drawing.Point(433, 399);
+            this.SaveTileButton.Location = new System.Drawing.Point(556, 485);
             this.SaveTileButton.Name = "SaveTileButton";
             this.SaveTileButton.Size = new System.Drawing.Size(92, 27);
             this.SaveTileButton.TabIndex = 5;
@@ -110,7 +110,8 @@
             // 
             // UndoButton
             // 
-            this.UndoButton.Location = new System.Drawing.Point(341, 366);
+            this.UndoButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.UndoButton.Location = new System.Drawing.Point(464, 452);
             this.UndoButton.Name = "UndoButton";
             this.UndoButton.Size = new System.Drawing.Size(86, 27);
             this.UndoButton.TabIndex = 6;
@@ -122,7 +123,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(537, 473);
+            this.ClientSize = new System.Drawing.Size(660, 559);
             this.Controls.Add(this.UndoButton);
             this.Controls.Add(this.SaveTileButton);
             this.Controls.Add(this.RotateButton);

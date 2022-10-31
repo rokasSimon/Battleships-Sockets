@@ -109,6 +109,7 @@ namespace BattleshipsCore.Game
                 MessageType.StartedBattle => ToMessage<StartedBattleResponse>(jo),
 
                 MessageType.SetTiles => HandleSetTiles(jo),
+                MessageType.UnsetTiles => ToCommand<UnsetTilesRequest>(jo),
                 MessageType.Shoot => ToCommand<ShootRequest>(jo),
 
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
