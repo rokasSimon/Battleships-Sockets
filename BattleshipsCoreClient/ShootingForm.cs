@@ -1,4 +1,4 @@
-using BattleshipsCore.Data;
+﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.ShootingStrategy;
@@ -7,6 +7,7 @@ using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
 using BattleshipsCoreClient.Observer;
+using BattleshipsCoreClient.Prototype;
 
 namespace BattleshipsCoreClient
 {
@@ -18,6 +19,9 @@ namespace BattleshipsCoreClient
 
         List<SaveTileState> states = new List<SaveTileState>();
         private ShootingStrategy shootingStrategy { get; set; }
+        private TileShootPrototype ShootPrototype = new TileShootPrototype(new SingleTileShooting(),
+         new AreaShooting(), new HorizontalLineShooting(), new VerticalLineShooting());
+        private ShootPrototype Repeat = new RepeatShoot();
 
         public ShootingForm()
         {
@@ -27,7 +31,7 @@ namespace BattleshipsCoreClient
 
             FormClosed += ShootingForm_FormClosed;
 
-            shootingStrategy = new SingleTileShooting();
+            shootingStrategy = ShootPrototype.CloneSingle();
             label1.Text = "Active shooting strategy: ";
             label2.Text = " - SingleTileShooting";
         }
@@ -274,26 +278,33 @@ namespace BattleshipsCoreClient
 
         private void SetSingleTileShootingStrategy(object sender, EventArgs e)
         {
-            shootingStrategy = new SingleTileShooting();
+            //shootingStrategy = new SingleTileShooting();
+            shootingStrategy = ShootPrototype.CloneSingle();
             label2.Text = " - SingleTileShooting";
         }
 
         private void SetAreaShootingStrategy(object sender, EventArgs e)
         {
-            shootingStrategy = new AreaShooting();
+            shootingStrategy = ShootPrototype.CloneArena();
             label2.Text = " - AreaShooting";
         }
 
         private void SetHorizontalShootingStrategy(object sender, EventArgs e)
         {
-            shootingStrategy = new HorizontalLineShooting();
+            shootingStrategy = ShootPrototype.CloneHorizontal();
             label2.Text = " - HorizontalLineShooting";
         }
 
         private void SetVerticalShootingStrategy(object sender, EventArgs e)
         {
-            shootingStrategy = new VerticalLineShooting();
+            shootingStrategy = ShootPrototype.CloneVertical();
             label2.Text = " - VerticalLineShooting";
+        }
+
+        private void SetLastShootedShootStrategy(object sender, EventArgs e)
+        {
+            Repeat.Clone();
+            label2.Text = " - RepeatLastShoot";
         }
 
         public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
