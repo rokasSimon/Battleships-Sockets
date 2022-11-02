@@ -277,8 +277,7 @@ namespace BattleshipsCoreClient
         }
 
         private void SetSingleTileShootingStrategy(object sender, EventArgs e)
-        {
-            //shootingStrategy = new SingleTileShooting();
+        {    
             shootingStrategy = ShootPrototype.CloneSingle();
             label2.Text = " - SingleTileShooting";
         }
