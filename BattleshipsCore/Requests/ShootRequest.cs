@@ -1,4 +1,5 @@
-﻿using BattleshipsCore.Data;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Data;
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Interfaces;
@@ -39,11 +40,19 @@ namespace BattleshipsCore.Requests
             var otherPlayerData = ServerGameStateManager.Instance.GetPlayer(otherPlayer)!;
             var (otherPlayerState, otherPlayerUpdates) = session.GetTurnFor(otherPlayer);
 
-            return new List<(Message, Guid)>
+            var responses = new List<(Message, Guid)>
             { 
                 (new SendTileUpdateResponse(newGameState, tileUpdate), connectionId),
                 (new SendTileUpdateResponse(otherPlayerState, otherPlayerUpdates), otherPlayerData.SocketData.Id),
             };
+
+            if ((newGameState == GameState.Lost || newGameState == GameState.Won) && session.Level == 1)
+            {
+                responses.Add((new InitializeLevelResponse(session.Level, session.AllowedPlaceableObjects), connectionId));
+                responses.Add((new InitializeLevelResponse(session.Level, session.AllowedPlaceableObjects), otherPlayerData.SocketData.Id));
+            }
+
+            return responses;
         }
     }
 }

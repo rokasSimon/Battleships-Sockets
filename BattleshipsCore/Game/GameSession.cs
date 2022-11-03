@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.PlaceableObjects;
 using System.Collections.Generic;
 
 namespace BattleshipsCore.Game
@@ -13,13 +14,38 @@ namespace BattleshipsCore.Game
         public bool BattleActive { get; set; }
         public string SessionName { get; init; }
 
+        public int Level { get; set; }
+
         public List<string> PlayerNames => _players.Keys.ToList();
+        public List<AllowedUnitData> AllowedPlaceableObjects
+        {
+            get
+            {
+                var allowedUnits = new List<AllowedUnitData>();
+
+                if (Level == 0)
+                {
+                    allowedUnits.Add(new AllowedUnitData { Type = TileType.Ship, Name = "Frigate", Length = 2, Max = 3, SideBlocks = 0 });
+                    allowedUnits.Add(new AllowedUnitData { Type = TileType.Ship, Name = "Destroyer", Length = 4, Max = 2, SideBlocks = 1 });
+                    allowedUnits.Add(new AllowedUnitData { Type = TileType.Tank, Name = "Infantry", Length = 1, Max = 2, SideBlocks = 0 });
+                    allowedUnits.Add(new AllowedUnitData { Type = TileType.Tank, Name = "Cruiser", Length = 1, Max = 2, SideBlocks = 0 });
+                }
+                else if (Level == 1)
+                {
+                    allowedUnits.Add(new AllowedUnitData { Type = TileType.Ship, Name = "Carrier", Length = 4, Max = 1, SideBlocks = 2 });
+                    allowedUnits.Add(new AllowedUnitData { Type = TileType.Tank, Name = "Amphibious", Length = 1, Max = 2, SideBlocks = 0 });
+                }
+
+                return allowedUnits;
+            }
+        }
 
         public GameSession(PlayerData initiator, string sessionName)
         {
             Active = false;
             BattleActive = false;
             SessionName = sessionName;
+            Level = 0;
 
             _players = new Dictionary<string, PlayerData>();
             _playerMaps = new Dictionary<string, PlayerGameState>();
@@ -178,8 +204,9 @@ namespace BattleshipsCore.Game
 
             var list = new List<TileUpdate>();
 
-            foreach (var position in positions) {
-                if(!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, new List<TileUpdate>());
+            foreach (var position in positions)
+            {
+                if(!position.IsInsideGrid(opponentMapData.Size)) return (GameState.Unknown, new List<TileUpdate>());
 
                 var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
                 var newTileType = shotTile switch
@@ -204,10 +231,11 @@ namespace BattleshipsCore.Game
             {
                 opponentMapData.GameState = GameState.Lost;
                 myMap.GameState = GameState.Won;
+
+                Level++;
             }
             else
             {
-             
                 opponentMapData.TileToUpdate = list;
                 opponentMapData.GameState = GameState.YourTurn;
                 myMap.GameState = GameState.EnemyTurn;
@@ -228,7 +256,18 @@ namespace BattleshipsCore.Game
 
         private PlayerGameState GenerateNewMap()
         {
-            return new PlayerGameState(new(Constants.GridRowCount, Constants.GridColumnCount));
+            var gameState = new PlayerGameState(new(Constants.GridRowCount, Constants.GridColumnCount));
+            var map = gameState.OriginalGrid;
+
+            for (int i = 0; i < Constants.GroundTileCount; i++)
+            {
+                var randomX = Random.Shared.Next(0, Constants.GridRowCount);
+                var randomY = Random.Shared.Next(0, Constants.GridColumnCount);
+
+                map[randomX, randomY] = new Tile(TileType.Ground);
+            }
+
+            return gameState;
         }
 
         private static void CopyGrid(Tile[,] source, Tile[,] destination)
@@ -240,17 +279,6 @@ namespace BattleshipsCore.Game
                     destination[i, j] = source[i, j];
                 }
             }
-        }
-
-        private static bool IsInsideGrid(Vec2 gridSize, Vec2 pos)
-        {
-            if (pos.X < 0
-                || pos.Y < 0
-                || pos.X >= gridSize.X
-                || pos.Y >= gridSize.Y)
-                return false;
-
-            return true;
         }
     }
 }

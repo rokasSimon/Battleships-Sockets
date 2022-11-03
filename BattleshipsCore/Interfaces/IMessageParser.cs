@@ -1,7 +1,4 @@
-﻿using BattleshipsCore.Server;
-using System.Net.Sockets;
-
-namespace BattleshipsCore.Interfaces
+﻿namespace BattleshipsCore.Interfaces
 {
     public interface IMessageParser
     {

@@ -1,5 +1,5 @@
-﻿using BattleshipsCore.Data;
-using BattleshipsCore.Game;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Data;
 using BattleshipsCore.Interfaces;
 
 namespace BattleshipsCore.Responses

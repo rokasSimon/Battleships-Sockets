@@ -101,7 +101,7 @@ namespace BattleshipsCoreClient
                 .SendMessageAsync(
                 new ShootRequest(GameClientManager.Instance.PlayerName!, targetPositions));
         }
-        private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
+        private void Button_MouseRightClick(object? sender, MouseEventArgs e)
         {
             //MessageBox.Show("Right click");
             if (InputDisabled) return;
@@ -226,8 +226,9 @@ namespace BattleshipsCoreClient
         private async Task WinAsync()
         {
             ClearData();
+
             MessageBox.Show("You won!", "Game Over");
-            Program.PlacementForm = new PlacementForm(2);
+
             await GameClientManager.Instance.LeaveSessionAsync();
             await Program.LeaveShootingForm();
         }
@@ -235,8 +236,9 @@ namespace BattleshipsCoreClient
         private async Task LoseAsync()
         {
             ClearData();
+
             MessageBox.Show("You lost!", "Game Over");
-            Program.PlacementForm = new PlacementForm(2);
+
             await GameClientManager.Instance.LeaveSessionAsync();
             await Program.LeaveShootingForm();
         }
@@ -244,6 +246,7 @@ namespace BattleshipsCoreClient
         private async Task QuitGameAsync()
         {
             ClearData();
+
             MessageBox.Show("Critical error occured - disconnecting.", "Error");
 
             await GameClientManager.Instance.DisconnectAsync();

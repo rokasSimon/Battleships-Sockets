@@ -1,4 +1,5 @@
-﻿using BattleshipsCore.Game;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 
@@ -33,6 +34,7 @@ namespace BattleshipsCore.Requests
                 foreach (var p in players)
                 {
                     responses.Add((response, p.SocketData.Id));
+                    responses.Add((new InitializeLevelResponse(session.Level, session.AllowedPlaceableObjects), p.SocketData.Id));
                 }
 
                 return responses;

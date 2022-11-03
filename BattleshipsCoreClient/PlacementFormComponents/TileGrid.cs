@@ -104,17 +104,6 @@ namespace BattleshipsCoreClient.PlacementFormComponents
         {
             var updates = tiles.Select(x => new TileUpdate(x, newType));
 
-            //var previousStates = new List<TileUpdate>(tiles.Count);
-
-            //foreach (var tile in tiles)
-            //{
-            //    previousStates.Add(new TileUpdate(tile, _currentGrid![tile.X, tile.Y].Type));
-
-            //    _currentGrid![tile.X, tile.Y].Type = newType;
-            //}
-
-            //return previousStates;
-
             return SetTiles(updates);
         }
 
@@ -135,6 +124,13 @@ namespace BattleshipsCoreClient.PlacementFormComponents
             }
 
             return previousStates;
+        }
+
+        public void Clear()
+        {
+            _originalMapData = null;
+            _currentGrid = null;
+            _panel.Controls.Clear();
         }
     }
 }

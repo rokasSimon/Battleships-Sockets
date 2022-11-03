@@ -1,5 +1,7 @@
-﻿using BattleshipsCore.Data;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Data;
 using BattleshipsCore.Game;
+using BattleshipsCore.Requests;
 using System.Net;
 
 namespace BattleshipsCoreClient

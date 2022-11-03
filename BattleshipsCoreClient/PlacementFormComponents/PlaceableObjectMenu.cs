@@ -86,5 +86,12 @@ namespace BattleshipsCoreClient.PlacementFormComponents
         {
             return $"{objectName} x{count}";
         }
+
+        public void Clear()
+        {
+            _placeableObjectButtons.Clear();
+            _selectedPlaceableObject = null;
+            _placeableObjectButtonPanel.Controls.Clear();
+        }
     }
 }

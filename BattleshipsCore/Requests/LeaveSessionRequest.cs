@@ -1,8 +1,10 @@
-﻿using BattleshipsCore.Data;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Data;
+using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 
-namespace BattleshipsCore.Game
+namespace BattleshipsCore.Requests
 {
     public class LeaveSessionRequest : Request
     {

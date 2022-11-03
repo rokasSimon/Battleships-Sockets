@@ -20,69 +20,74 @@ namespace BattleshipsCoreClient
         private PlaceableObjectMenu _placeableObjectMenu;
         private DropoutStack<ICommand> _executedCommandStack;
         private List<PlacedObject> _selectedTileGroups;
+        private AbstractLevelUnitFactory? _levelUnitFactory;
 
+        private int Level { get; set; }
         private bool InputDisabled { get; set; }
 
-        private readonly PlaceableObject[] ship1 = new[]
-        {           
-            new Ship1(1, "Ship A1", 3, 1)                                   
-        };
-        private readonly PlaceableObject[] ship2 = new[]
-        {
-            new Ship2(2, "Ship A2", 2, 2)                                   
-        };
-        private readonly PlaceableObject[] ship3 = new[]
-        {
-            new Ship3(3, "Ship A3", 1, 3)                                   
-        };
-        private readonly PlaceableObject[] superShip1 = new[]
-        {
-            new SuperShip1(1, "Super Ship S1", 8, 4)                                   
-        };
-        private readonly PlaceableObject[] superShip2 = new[]
-        {
-            new SuperShip2(4, "Super Ship S2", 2, 5)                                   
-        };
-        private readonly PlaceableObject[] superShip3 = new[]
-        {
-            new SuperShip3(5, "Super Ship S3", 4, 6)                                   
-        };
-
-        public PlacementForm(int level)
+        public PlacementForm()
         {
             InitializeComponent();
 
             InputDisabled = false;
+            Level = -1;
+
             _executedCommandStack = new DropoutStack<ICommand>(MaximumRememberedCommands);
             _selectedTileGroups = new List<PlacedObject>();
 
             _placeableObjectMenu = new PlaceableObjectMenu(PlaceableObjectPanel);
             _tileGrid = new TileGrid(TileGrid);
             
-            if(level == 1)
-            {
-                InitializePlaceableObjects(ship1);
-                InitializePlaceableObjects(ship2);
-                InitializePlaceableObjects(ship3);
-            }
-            else
-            {
-                InitializePlaceableObjects(superShip1);
-                InitializePlaceableObjects(superShip2);
-                InitializePlaceableObjects(superShip3);
-            }      
-            
             FormClosed += PlacementForm_FormClosed;      
         }
 
         public void ClearData()
         {
+            Level = -1;
             InputDisabled = false;
 
+            _tileGrid.Clear();
+            _placeableObjectMenu.Clear();
+            _executedCommandStack.Clear();
             _selectedTileGroups.Clear();
         }
 
-        private void InitializePlaceableObjects(PlaceableObject[] ship)
+        private void InitializeLevel(int level, List<AllowedUnitData> allowedUnits)
+        {
+            ClearData();
+
+            Level = level;
+
+            if (Level == 0) _levelUnitFactory = new Level1Factory();
+            else if (Level == 1) _levelUnitFactory = new Level2Factory();
+            else throw new ArgumentOutOfRangeException("Unknown level.");
+
+            var placeableObjects = new List<PlaceableObject>(allowedUnits.Count);
+
+            foreach (var allowedUnit in allowedUnits)
+            {
+                if (allowedUnit.Type == TileType.Ship)
+                {
+                    placeableObjects.Add(_levelUnitFactory.CreateShipUnit(
+                        allowedUnit.Name,
+                        allowedUnit.Length,
+                        allowedUnit.SideBlocks,
+                        allowedUnit.Max));
+                }
+                else if (allowedUnit.Type == TileType.Tank)
+                {
+                    placeableObjects.Add(
+                    _levelUnitFactory.CreateTankUnit(
+                        (int)TileType.InfantryTank,
+                        allowedUnit.Name,
+                        allowedUnit.Max));
+                }
+            }
+
+            InitializePlaceableObjects(placeableObjects);
+        }
+
+        private void InitializePlaceableObjects(List<PlaceableObject> ship)
         {
             foreach (var item in ship)
             {
@@ -243,6 +248,13 @@ namespace BattleshipsCoreClient
                 Invoke(() =>
                 {
                     InitializeGrid(smdr.MapData);
+                });
+            }
+            else if (message is InitializeLevelResponse ilr)
+            {
+                Invoke(() =>
+                {
+                    InitializeLevel(ilr.Level, ilr.AllowedObjects);
                 });
             }
             else if (message is SendTileUpdateResponse stur)

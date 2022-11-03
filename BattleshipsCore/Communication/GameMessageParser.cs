@@ -1,7 +1,7 @@
 ﻿using BattleshipsCore.Interfaces;
 using Newtonsoft.Json;
 
-namespace BattleshipsCore.Game
+namespace BattleshipsCore.Communication
 {
     public class GameMessageParser : IMessageParser
     {

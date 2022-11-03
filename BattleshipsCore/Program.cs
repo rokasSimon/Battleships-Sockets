@@ -1,4 +1,4 @@
-﻿using BattleshipsCore.Game;
+﻿using BattleshipsCore.Communication;
 using BattleshipsCore.Server;
 using System.Diagnostics;
 using System.Net;

@@ -10,5 +10,13 @@
         Unavailable = 5,
         Destroyed = 6,
         Tank = 7,
+
+        Frigate,
+        Destroyer,
+        Carrier,
+
+        InfantryTank,
+        CruiserTank,
+        AmphibiousTank,
     }
 }

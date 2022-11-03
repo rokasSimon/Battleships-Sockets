@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Data;
 using BattleshipsCore.Game;
+using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Observer;
 using Message = BattleshipsCore.Interfaces.Message;

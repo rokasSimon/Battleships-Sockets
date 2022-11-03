@@ -11,32 +11,13 @@ using Newtonsoft.Json.Serialization;
 
 #nullable disable
 
-namespace BattleshipsCore.Game
+namespace BattleshipsCore.Communication
 {
-    public class ConcreteMessageConverter : DefaultContractResolver
+    internal class ConcreteMessageConverter : DefaultContractResolver
     {
         protected override JsonConverter ResolveContractConverter(Type objectType)
         {
-            if (typeof(Message).IsAssignableFrom(objectType) && !objectType.IsAbstract) return null;
-
-            return base.ResolveContractConverter(objectType);
-        }
-
-        protected override JsonObjectContract CreateObjectContract(Type objectType)
-        {
-            var contract = base.CreateObjectContract(objectType);
-
-            contract.ItemRequired = Required.AllowNull;
-
-            return contract;
-        }
-    }
-
-    public class ConcreteCommandConverter : DefaultContractResolver
-    {
-        protected override JsonConverter ResolveContractConverter(Type objectType)
-        {
-            if (typeof(Request).IsAssignableFrom(objectType) && !objectType.IsAbstract) return null;
+            if ((typeof(Message).IsAssignableFrom(objectType) || typeof(Request).IsAssignableFrom(objectType)) && !objectType.IsAbstract) return null;
 
             return base.ResolveContractConverter(objectType);
         }
@@ -53,8 +34,7 @@ namespace BattleshipsCore.Game
 
     public class MessageConverter : JsonConverter
     {
-        static JsonSerializerSettings ResponseConverterSettings = new() { ContractResolver = new ConcreteMessageConverter() };
-        static JsonSerializerSettings RequestConverterSettings = new() { ContractResolver = new ConcreteCommandConverter() };
+        static readonly JsonSerializerSettings ResponseConverterSettings = new() { ContractResolver = new ConcreteMessageConverter() };
 
         public override bool CanConvert(Type objectType)
         {
@@ -79,38 +59,38 @@ namespace BattleshipsCore.Game
                 MessageType.SendSessionData => ToMessage<SendSessionDataResponse>(jo),
                 MessageType.SendMapData => ToMessage<SendMapDataResponse>(jo),
                 MessageType.SendTileUpdate => ToMessage<SendTileUpdateResponse>(jo),
-                MessageType.NewSessionsAdded => ToMessage<NewSessionsAddedResponse>(jo),
 
-                MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
-                MessageType.GetSessionList => ToCommand<GetSessionListRequest>(jo),
-                MessageType.GetSessionData => ToCommand<GetSessionDataRequest>(jo),
-                MessageType.GetMapData => ToCommand<GetMapDataRequest>(jo),
-                MessageType.GetOpponentMap => ToCommand<GetOpponentMapRequest>(jo),
-                MessageType.GetMyTurn => ToCommand<GetMyTurnRequest>(jo),
+                MessageType.GetPlayerList => ToMessage<GetPlayerListRequest>(jo),
+                MessageType.GetSessionList => ToMessage<GetSessionListRequest>(jo),
+                MessageType.GetSessionData => ToMessage<GetSessionDataRequest>(jo),
+                MessageType.GetMapData => ToMessage<GetMapDataRequest>(jo),
+                MessageType.GetOpponentMap => ToMessage<GetOpponentMapRequest>(jo),
+                MessageType.GetMyTurn => ToMessage<GetMyTurnRequest>(jo),
 
-                MessageType.JoinServer => ToCommand<JoinServerRequest>(jo),
+                MessageType.JoinServer => ToMessage<JoinServerRequest>(jo),
                 MessageType.JoinedServer => ToMessage<JoinedServerResponse>(jo),
 
-                MessageType.Disconnect => ToCommand<DisconnectRequest>(jo),
+                MessageType.Disconnect => ToMessage<DisconnectRequest>(jo),
                 MessageType.Disconnected => ToMessage<DisconnectResponse>(jo),
 
-                MessageType.JoinSession => ToCommand<JoinSessionRequest>(jo),
+                MessageType.JoinSession => ToMessage<JoinSessionRequest>(jo),
                 MessageType.JoinedSession => ToMessage<JoinedSessionResponse>(jo),
 
-                MessageType.LeaveSession => ToCommand<LeaveSessionRequest>(jo),
+                MessageType.LeaveSession => ToMessage<LeaveSessionRequest>(jo),
                 MessageType.LeftSession => ToMessage<LeftSessionResponse>(jo),
 
-                MessageType.CreateSession => ToCommand<CreateSessionRequest>(jo),
+                MessageType.CreateSession => ToMessage<CreateSessionRequest>(jo),
 
-                MessageType.StartGame => ToCommand<StartGameRequest>(jo),
+                MessageType.StartGame => ToMessage<StartGameRequest>(jo),
                 MessageType.StartedGame => ToMessage<StartedGameResponse>(jo),
+                MessageType.InitializeLevel => ToMessage<InitializeLevelResponse>(jo),
 
-                MessageType.StartBattle => ToCommand<StartBattleRequest>(jo),
+                MessageType.StartBattle => ToMessage<StartBattleRequest>(jo),
                 MessageType.StartedBattle => ToMessage<StartedBattleResponse>(jo),
 
                 MessageType.SetTiles => HandleSetTiles(jo),
-                MessageType.UnsetTiles => ToCommand<UnsetTilesRequest>(jo),
-                MessageType.Shoot => ToCommand<ShootRequest>(jo),
+                MessageType.UnsetTiles => ToMessage<UnsetTilesRequest>(jo),
+                MessageType.Shoot => ToMessage<ShootRequest>(jo),
 
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
             };
@@ -131,14 +111,11 @@ namespace BattleshipsCore.Game
             return JsonConvert.DeserializeObject<TMessage>(val.ToString(), ResponseConverterSettings);
         }
 
-        private TCommand ToCommand<TCommand>(JObject val) where TCommand : Request
-        {
-            return JsonConvert.DeserializeObject<TCommand>(val.ToString(), RequestConverterSettings);
-        }
-
         // Should look for a better solution, this is an exception
         private SetTilesRequest HandleSetTiles(JObject val)
         {
+            var factory = new PlaceableObjectFactory();
+
             var playerName = val.Value<string>("PlayerName");
             var placeableObjects = new List<PlacedObject>();
 
@@ -146,21 +123,17 @@ namespace BattleshipsCore.Game
             {
                 var tiles = JsonConvert.DeserializeObject<List<Vec2>>(item["Tiles"].ToString());
 
-                var objVal = item["Obj"];               
-                if(objVal.Value<int>("ShipType") > 3)
-                {
-                    Level2Factory lv = new Level2Factory();
-                    var ships = lv.CreateLevel2(objVal.Value<int>("ShipType"), objVal.Value<string>("Name"), objVal.Value<int>("Length"), objVal.Value<int>("MaximumCount"));
-                    ships.GenerateShip();
-                    placeableObjects.Add(new PlacedObject(ships, tiles));
-                }
-                else
-                {
-                    Level1Factory lv = new Level1Factory();
-                    var ships = lv.CreateLevel1(objVal.Value<int>("ShipType"), objVal.Value<string>("Name"), objVal.Value<int>("Length"), objVal.Value<int>("MaximumCount"));
-                    ships.GenerateShip();
-                    placeableObjects.Add(new PlacedObject(ships, tiles));
-                }  
+                var objVal = item["Obj"];
+                var type = (TileType)objVal.Value<int>("t");
+
+                var name = objVal.Value<string>("Name");
+                var max = objVal.Value<int>("Max");
+                var length = objVal.Value<int>("Length");
+                var sideBlocks = objVal.Value<int>("SideBlocks");
+
+                var obj = factory.Create(type, name, max, length, sideBlocks);
+
+                placeableObjects.Add(new PlacedObject(obj, tiles));
             }
 
             var request = new SetTilesRequest(playerName, placeableObjects);

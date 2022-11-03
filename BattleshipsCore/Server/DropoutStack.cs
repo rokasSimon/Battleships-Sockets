@@ -39,5 +39,10 @@
 
             return _items[idx];
         }
+
+        public void Clear()
+        {
+            Array.Clear(_items, 0, _items.Length);
+        }
     }
 }

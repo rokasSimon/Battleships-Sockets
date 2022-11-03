@@ -1,7 +1,8 @@
-﻿using BattleshipsCore.Interfaces;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Interfaces;
 using Newtonsoft.Json;
 
-namespace BattleshipsCore.Game
+namespace BattleshipsCore.Responses
 {
     public class FailResponse : Message
     {

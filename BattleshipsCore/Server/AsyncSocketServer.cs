@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using System.Text;
 using System.Net.Sockets;
+using Newtonsoft.Json;
 using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
-using Newtonsoft.Json;
+using BattleshipsCore.Requests;
+using BattleshipsCore.Responses;
 
 namespace BattleshipsCore.Server
 {
@@ -97,7 +99,7 @@ namespace BattleshipsCore.Server
             }
             catch (JsonSerializationException e)
             {
-                ServerLogger.Instance.LogError(e.Message);
+                ServerLogger.Instance.LogWarning(e.Message);
 
                 SendFailForCatch(client);
             }

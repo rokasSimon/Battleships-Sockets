@@ -1,7 +1,8 @@
-﻿using BattleshipsCore.Data;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Data;
 using BattleshipsCore.Interfaces;
 
-namespace BattleshipsCore.Game
+namespace BattleshipsCore.Responses
 {
     public class SendSessionListResponse : Message
     {

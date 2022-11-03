@@ -1,4 +1,4 @@
-﻿using BattleshipsCore.Game;
+﻿using BattleshipsCore.Communication;
 using Newtonsoft.Json;
 
 namespace BattleshipsCore.Interfaces

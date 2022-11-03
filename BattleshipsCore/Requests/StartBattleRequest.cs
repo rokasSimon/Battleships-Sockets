@@ -1,4 +1,5 @@
-﻿using BattleshipsCore.Game;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 

@@ -1,4 +1,4 @@
-﻿namespace BattleshipsCore.Data
+﻿namespace BattleshipsCore.Game
 {
     public enum GameState
     {

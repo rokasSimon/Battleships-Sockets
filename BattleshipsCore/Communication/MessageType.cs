@@ -1,4 +1,4 @@
-﻿namespace BattleshipsCore.Game
+﻿namespace BattleshipsCore.Communication
 {
     public enum MessageType : int
     {
@@ -41,6 +41,6 @@
         UnsetTiles,
         Shoot,
 
-        NewSessionsAdded,
+        InitializeLevel,
     }
 }

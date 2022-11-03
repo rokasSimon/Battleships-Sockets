@@ -10,5 +10,6 @@ namespace BattleshipsCore.Data
     {
         public static int GridRowCount => 15;
         public static int GridColumnCount => 15;
+        public static int GroundTileCount => 10;
     }
 }

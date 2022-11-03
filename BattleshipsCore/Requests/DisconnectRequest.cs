@@ -1,7 +1,9 @@
-﻿using BattleshipsCore.Interfaces;
+﻿using BattleshipsCore.Communication;
+using BattleshipsCore.Game;
+using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 
-namespace BattleshipsCore.Game
+namespace BattleshipsCore.Requests
 {
     public class DisconnectRequest : Request
     {
