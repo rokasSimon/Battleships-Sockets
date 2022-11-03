@@ -8,8 +8,8 @@ namespace BattleshipsCoreClient.Data
 {
     public class MarkedToShoot : ButtonDecorator
     {
-        ButtonBase newBase;
-        public MarkedToShoot(ButtonBase basee) : base(basee)
+        Button newBase;
+        public MarkedToShoot(Button basee) : base(basee)
         {
             newBase = basee;
             Bitmap bmp = new Bitmap(20, 20);

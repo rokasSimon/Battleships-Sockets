@@ -10,6 +10,6 @@
         Unavailable = 5,
         Destroyed = 6,
         Tank = 7,
-        Grass = 8
+        Grass = 8,
     }
 }

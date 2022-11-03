@@ -9,137 +9,146 @@ namespace BattleshipsCoreClient
 {
     internal static class Program
     {
-        public static Start ConnectionForm;
-        public static SessionForm SessionForm;
-        public static ActiveSessionForm ActiveSessionForm;
-        public static PlacementForm PlacementForm;
-        public static ShootingForm ShootingForm;
-
-        public static GameClientManager _gm;
 
         [STAThread]
         static void Main()
         {
-            ApplicationConfiguration.Initialize();
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-            ConnectionForm = new Start();
-            SessionForm = new SessionForm();
-            ActiveSessionForm = new ActiveSessionForm();
-            PlacementForm = new PlacementForm();
-            ShootingForm = new ShootingForm();
-            _gm = GameClientManager.Instance;
-
-            Application.Run(ConnectionForm);
+            Client client = new Client(new Facade());
+            client.startGame();
         }
 
-        public static async Task SwitchToConnectionFormFrom<TGameForm>(TGameForm form)
-            where TGameForm : Form, ISubscriber
-        {
-            if (_gm.Client != null)
-            {
-                _gm.Client.Unsubscribe(form);
-                _gm.Client.Subscribe(ConnectionForm);
 
-                await _gm.DisconnectAsync();
-            }
+        /* public static Start ConnectionForm;
+         public static SessionForm SessionForm;
+         public static ActiveSessionForm ActiveSessionForm;
+         public static PlacementForm PlacementForm;
+         public static ShootingForm ShootingForm;
 
-            form.Invoke(() =>
-            {
-                ConnectionForm.Show();
-                SessionForm.Hide();
-                ActiveSessionForm.Hide();
-                PlacementForm.Hide();
-                ShootingForm.Hide();
-            });
-        }
+         public static GameClientManager _gm;
 
-        public static async Task SwitchToSessionListFrom<TGameForm>(TGameForm form)
-            where TGameForm : Form, ISubscriber
-        {
-            _gm.Client.Unsubscribe(form);
-            _gm.Client.Subscribe(SessionForm);
+         [STAThread]
+         static void Main()
+         {
+             ApplicationConfiguration.Initialize();
+             Application.EnableVisualStyles();
+             Application.SetCompatibleTextRenderingDefault(false);
 
-            await _gm.Client.SendMessageAsync(new GetSessionListRequest());
+             ConnectionForm = new Start();
+             SessionForm = new SessionForm();
+             ActiveSessionForm = new ActiveSessionForm();
+             PlacementForm = new PlacementForm(1);
+             ShootingForm = new ShootingForm();
+             _gm = GameClientManager.Instance;
 
-            form.Invoke(() =>
-            {
-                SessionForm.Show();
-                ConnectionForm.Hide();
-                ActiveSessionForm.Hide();
-                PlacementForm.Hide();
-                ShootingForm.Hide();
-            });
-        }
+             Application.Run(ConnectionForm);
+         }
 
-        public static async Task SwitchToActiveSessionFormFromSessionList(Guid sessionKey)
-        {
-            _gm.Client.Unsubscribe(SessionForm);
-            _gm.Client.Subscribe(ActiveSessionForm);
+         public static async Task SwitchToConnectionFormFrom<TGameForm>(TGameForm form)
+             where TGameForm : Form, ISubscriber
+         {
+             if (_gm.Client != null)
+             {
+                 _gm.Client.Unsubscribe(form);
+                 _gm.Client.Subscribe(ConnectionForm);
 
-            await _gm.Client.SendMessageAsync(new GetSessionDataRequest(sessionKey));
+                 await _gm.DisconnectAsync();
+             }
 
-            SessionForm.Invoke(() =>
-            {
-                ActiveSessionForm.Show();
-                ConnectionForm.Hide();
-                SessionForm.Hide();
-                PlacementForm.Hide();
-                ShootingForm.Hide();
-            });
-        }
+             form.Invoke(() =>
+             {
+                 ConnectionForm.Show();
+                 SessionForm.Hide();
+                 ActiveSessionForm.Hide();
+                 PlacementForm.Hide();
+                 ShootingForm.Hide();
+             });
+         }
 
-        public static async Task SwitchToPlacementFormFromActiveSession(Guid sessionKey, string playerName)
-        {
-            _gm.Client.Unsubscribe(ActiveSessionForm);
-            _gm.Client.Subscribe(PlacementForm);
+         public static async Task SwitchToSessionListFrom<TGameForm>(TGameForm form)
+             where TGameForm : Form, ISubscriber
+         {
+             _gm.Client.Unsubscribe(form);
+             _gm.Client.Subscribe(SessionForm);
 
-            await _gm.Client.SendMessageAsync(new GetMapDataRequest(sessionKey, playerName));
+             await _gm.Client.SendMessageAsync(new GetSessionListRequest());
 
-            ActiveSessionForm.Invoke(() =>
-            {
-                PlacementForm.Show();
-                ConnectionForm.Hide();
-                SessionForm.Hide();
-                ActiveSessionForm.Hide();
-                ShootingForm.Hide();
-            });
-        }
+             form.Invoke(() =>
+             {
+                 SessionForm.Show();
+                 ConnectionForm.Hide();
+                 ActiveSessionForm.Hide();
+                 PlacementForm.Hide();
+                 ShootingForm.Hide();
+             });
+         }
 
-        public static async Task EnableShootingForm()
-        {
-            _gm.Client.Subscribe(ShootingForm);
+         public static async Task SwitchToActiveSessionFormFromSessionList(Guid sessionKey)
+         {
+             _gm.Client.Unsubscribe(SessionForm);
+             _gm.Client.Subscribe(ActiveSessionForm);
 
-            await _gm.Client.SendMessageAsync(new GetOpponentMapRequest(_gm.PlayerName!));
-            await _gm.Client.SendMessageAsync(new GetMyTurnRequest(_gm.PlayerName!));
+             await _gm.Client.SendMessageAsync(new GetSessionDataRequest(sessionKey));
 
-            PlacementForm.Invoke(() =>
-            {
-                ShootingForm.Show();
-                ConnectionForm.Hide();
-                SessionForm.Hide();
-                ActiveSessionForm.Hide();
-            });
-        }
+             SessionForm.Invoke(() =>
+             {
+                 ActiveSessionForm.Show();
+                 ConnectionForm.Hide();
+                 SessionForm.Hide();
+                 PlacementForm.Hide();
+                 ShootingForm.Hide();
+             });
+         }
 
-        public static async Task LeaveShootingForm()
-        {
-            _gm.Client.Unsubscribe(PlacementForm);
-            _gm.Client.Unsubscribe(ShootingForm);
-            _gm.Client.Subscribe(SessionForm);
+         public static async Task SwitchToPlacementFormFromActiveSession(Guid sessionKey, string playerName)
+         {
+             _gm.Client.Unsubscribe(ActiveSessionForm);
+             _gm.Client.Subscribe(PlacementForm);
 
-            await _gm.Client.SendMessageAsync(new GetSessionListRequest());
+             await _gm.Client.SendMessageAsync(new GetMapDataRequest(sessionKey, playerName));
 
-            ShootingForm.Invoke(() =>
-            {
-                SessionForm.Show();
-                ConnectionForm.Hide();
-                ActiveSessionForm.Hide();
-                PlacementForm.Hide();
-                PlacementForm.ClearData();
-                ShootingForm.Hide();
-            });
-        }
+             ActiveSessionForm.Invoke(() =>
+             {
+                 PlacementForm.Show();
+                 ConnectionForm.Hide();
+                 SessionForm.Hide();
+                 ActiveSessionForm.Hide();
+                 ShootingForm.Hide();
+             });
+         }
+
+         public static async Task EnableShootingForm()
+         {
+             _gm.Client.Subscribe(ShootingForm);
+
+             await _gm.Client.SendMessageAsync(new GetOpponentMapRequest(_gm.PlayerName!));
+             await _gm.Client.SendMessageAsync(new GetMyTurnRequest(_gm.PlayerName!));
+
+             PlacementForm.Invoke(() =>
+             {
+                 ShootingForm.Show();
+                 ConnectionForm.Hide();
+                 SessionForm.Hide();
+                 ActiveSessionForm.Hide();
+             });
+         }
+
+         public static async Task LeaveShootingForm()
+         {
+             _gm.Client.Unsubscribe(PlacementForm);
+             _gm.Client.Unsubscribe(ShootingForm);
+             _gm.Client.Subscribe(SessionForm);
+
+             await _gm.Client.SendMessageAsync(new GetSessionListRequest());
+
+             ShootingForm.Invoke(() =>
+             {
+                 SessionForm.Show();
+                 ConnectionForm.Hide();
+                 ActiveSessionForm.Hide();
+                 PlacementForm.Hide();
+                 PlacementForm.ClearData();
+                 ShootingForm.Hide();
+             });
+         }*/
     }
 }

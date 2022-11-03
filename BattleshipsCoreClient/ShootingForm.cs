@@ -1,4 +1,4 @@
-﻿using BattleshipsCore.Data;
+using BattleshipsCore.Data;
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.ShootingStrategy;
@@ -70,16 +70,24 @@ namespace BattleshipsCoreClient
                     var button = new Button();
 
                     button.Name = $"{i}_{j}";
-                    button.BackColor = tile.Type.ToColor();
+                    //button.BackColor = tile.Type.ToColor();
+                    button.BackColor = Color.FromArgb(180, 218, 165, 32);
                     button.Dock = DockStyle.Fill;
                     button.Padding = new Padding(0);
                     button.Margin = new Padding(0);
-
+                    button.Image = new Bitmap(20, 20);
                     button.Click += Button_Click;
-
                     button.MouseDown += Button_MouseRightClick;
 
                     TileGrid.Controls.Add(button, j, i);
+                    if (tile.Type == TileType.Water || tile.Type == TileType.Ship || tile.Type == TileType.Tank)
+                    {
+                        var specificButton = new WaterDecorator(button);
+                    }
+                    if (tile.Type == TileType.Grass)
+                    {
+                        var specificButton = new GrassDecorator(button);
+                    }
                 }
             }
         }
@@ -94,6 +102,7 @@ namespace BattleshipsCoreClient
             int i = int.Parse(coordinates[0]);
             int j = int.Parse(coordinates[1]);
             var pos = new Vec2(i, j);
+            
 
             var targetPositions = shootingStrategy.TargetPositions(pos);
 
@@ -103,7 +112,6 @@ namespace BattleshipsCoreClient
         }
         private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
         {
-            //MessageBox.Show("Right click");
             if (InputDisabled) return;
 
             var button = (Button)sender!;
@@ -119,25 +127,22 @@ namespace BattleshipsCoreClient
 
             if (!states.Any(x => x.x.Equals(x)) && !states.Any(x => x.y.Equals(y)) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                MessageBox.Show("Decorator: Marked to shoot ! ");
                 var specificButton = new MarkedToShoot(button);
 
                 specificButton.Name = $"{y}_{x}";
 
                 specificButton.Click += Button_Click;
-                specificButton.MouseDoubleClick += Button_MouseRightClick;
+                specificButton.MouseDown += Button_MouseRightClick;
                 states.Add(shoot);
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to shoot")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                MessageBox.Show("Decorator: Marked to suspect ship ! ");
-
                 var specificButtonShip = new SuspectShip(button);
 
                 specificButtonShip.Name = $"{y}_{x}";
 
                 specificButtonShip.Click += Button_Click;
-                specificButtonShip.MouseDoubleClick += Button_MouseRightClick;
+                specificButtonShip.MouseDown += Button_MouseRightClick;
                 int index = states.FindIndex(s => s.Equals(shoot));
 
                 if (index != -1)
@@ -145,14 +150,12 @@ namespace BattleshipsCoreClient
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to suspect ship")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                MessageBox.Show("Decorator: Marked to suspect tank ! ");
-
                 var specificButtonTank = new SuspectTank(button);
 
                 specificButtonTank.Name = $"{y}_{x}";
 
                 specificButtonTank.Click += Button_Click;
-                specificButtonTank.MouseDoubleClick += Button_MouseRightClick;
+                specificButtonTank.MouseDown += Button_MouseRightClick;
                 int index = states.FindIndex(s => s.Equals(shoot2));
 
                 if (index != -1)
@@ -160,14 +163,12 @@ namespace BattleshipsCoreClient
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to suspect tank")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                MessageBox.Show("Decorator: Market to shoot ! ");
-
                 var specificButton = new MarkedToShoot(button);
 
                 specificButton.Name = $"{y}_{x}";
 
                 specificButton.Click += Button_Click;
-                specificButton.MouseDoubleClick += Button_MouseRightClick;
+                specificButton.MouseDown += Button_MouseRightClick;
                 int index = states.FindIndex(s => s.Equals(shoot3));
 
                 if (index != -1)
@@ -181,15 +182,7 @@ namespace BattleshipsCoreClient
             {
                 case GameState.Won: await WinAsync(); break;
                 case GameState.Lost: await LoseAsync(); break;
-                case GameState.YourTurn:
-                    {
-                        foreach (var tu in updates)
-                        {
-                            Program.PlacementForm.UpdateTile(tu);
-                        }
-                        GrantTurn();
-                    }
-                    break;
+                case GameState.YourTurn: GrantTurn(); break;
                 case GameState.EnemyTurn:
                     {
                         foreach (var tu in updates)
@@ -208,16 +201,26 @@ namespace BattleshipsCoreClient
             var tiles = new List<Vec2> { update.TilePosition };
 
             SetTiles(tiles, update.NewType);
-            ColorTiles(tiles, update.NewType.ToColor());
+
+
+            ColorTiles(tiles, update.NewType);
         }
 
-        private void ColorTiles(List<Vec2> tiles, Color newColor)
+        private void ColorTiles(List<Vec2> tiles, TileType type)
         {
             foreach (var item in tiles)
             {
-                var selBut = TileGrid.GetControlFromPosition(item.Y, item.X);
-
-                selBut.BackColor = newColor;
+                Button selBut = (Button)TileGrid.GetControlFromPosition(item.Y, item.X);//as Button;
+                
+                if (type == TileType.Hit)
+                {
+                    var buttom = new ShootMarkDecorator(selBut);
+                }
+                if (type == TileType.Miss)
+                {
+                    var buttom = new MissMarkDecorator(selBut);
+                }
+                //selBut.BackColor = newColor;
             }
         }
 
@@ -235,18 +238,18 @@ namespace BattleshipsCoreClient
         {
             ClearData();
             MessageBox.Show("You won!", "Game Over");
-
+            Facade.PlacementForm = new PlacementForm(2);
             await GameClientManager.Instance.LeaveSessionAsync();
-            await Program.LeaveShootingForm();
+            await Facade.LeaveShootingForm();
         }
 
         private async Task LoseAsync()
         {
             ClearData();
             MessageBox.Show("You lost!", "Game Over");
-
+            Facade.PlacementForm = new PlacementForm(2);
             await GameClientManager.Instance.LeaveSessionAsync();
-            await Program.LeaveShootingForm();
+            await Facade.LeaveShootingForm();
         }
 
         private async Task QuitGameAsync()
@@ -255,7 +258,7 @@ namespace BattleshipsCoreClient
             MessageBox.Show("Critical error occured - disconnecting.", "Error");
 
             await GameClientManager.Instance.DisconnectAsync();
-            await Program.LeaveShootingForm();
+            await Facade.LeaveShootingForm();
         }
 
         private void GrantTurn()
@@ -310,11 +313,11 @@ namespace BattleshipsCoreClient
             {
                 GameClientManager.Instance.ActiveSession = null;
 
-                await Program.LeaveShootingForm();
+                await Facade.LeaveShootingForm();
             }
             else if (message is DisconnectResponse dr)
             {
-                await Program.SwitchToConnectionFormFrom(this);
+                await Facade.SwitchToConnectionFormFrom(this);
             }
             else if (message is SendTileUpdateResponse stur)
             {

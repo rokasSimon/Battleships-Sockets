@@ -103,22 +103,33 @@ namespace BattleshipsCore.Game
 
         public bool SetMapFor(string playerName, List<PlacedObject> objectsToPlace)
         {
-            if (_playerMaps.TryGetValue(playerName, out var map))
+            if (_playerMaps.TryGetValue(playerName, out var playerGameState))
             {
-                map.Grid = new Tile[map.Size.X, map.Size.Y];
-                CopyGrid(map.OriginalGrid, map.Grid);
+                var newSet = new Tile[playerGameState.Size.X, playerGameState.Size.Y];
+                CopyGrid(playerGameState.OriginalGrid, newSet);
 
                 foreach (var obj in objectsToPlace)
                 {
                     foreach (var tile in obj.Tiles)
                     {
-                        map.Grid[tile.X, tile.Y].Type = obj.Obj.Type;
+                        newSet[tile.X, tile.Y].Type = obj.Obj.Type;
                     }
                 }
 
-                map.TilesToHit = objectsToPlace.SelectMany(x => x.Tiles).Count();
+                playerGameState.TilesToHit = objectsToPlace.SelectMany(x => x.Tiles).Count();
+                playerGameState.Grid = newSet;
 
                 return true;
+            }
+
+            return false;
+        }
+
+        public bool UnsetMapFor(string playerName)
+        {
+            if (_playerMaps.TryGetValue(playerName, out var playerGameState))
+            {
+                return playerGameState.UnsetMap();
             }
 
             return false;
@@ -174,6 +185,7 @@ namespace BattleshipsCore.Game
                 var newTileType = shotTile switch
                 {
                     TileType.Ship => TileType.Hit,
+                    TileType.Tank => TileType.Hit,
                     TileType.Hit => TileType.Hit,
                     _ => TileType.Miss,
                 };

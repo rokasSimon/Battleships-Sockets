@@ -47,7 +47,7 @@ namespace BattleshipsCore.Game
                 }, otherPlayer.SocketData.Id));
             }
 
-            // Send success to joining player
+            // Send success to leaving player
             responses.Add((new LeftSessionResponse(SessionToLeave), connectionId));
 
             return responses;

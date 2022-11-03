@@ -1,16 +1,16 @@
-﻿using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.GameGrid;
 using Newtonsoft.Json;
 
 namespace BattleshipsCore.Game.PlaceableObjects
 {
-    public class Ship : PlaceableObject
+    public class Tank : PlaceableObject
     {
         [JsonProperty("t")]
-        public override TileType Type => TileType.Ship;
+        public override TileType Type => TileType.Tank;
 
         public int Length { get; init; }
 
-        public Ship(string name, int max, int length) : base(name, max)
+        public Tank(string name, int max, int length) : base(name, max)
         {
             Length = length;
         }
@@ -45,18 +45,6 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
         public override bool IsPlaceable(Tile[,] grid, Vec2 position)
         {
-            //padaryta kad nebutu galima deti laivo salia zemes ar zoles
-            if (position.Y - 1 >= 0 && position.Y - 1 < 15 && grid[position.X, position.Y - 1].Type == TileType.Grass ||
-                position.Y + 1 >= 0 && position.Y + 1 < 15 && grid[position.X, position.Y + 1].Type == TileType.Grass ||
-                position.X - 1 >= 0 && position.X - 1 < 15 && grid[position.X - 1, position.Y].Type == TileType.Grass ||
-                position.X + 1 >= 0 && position.X + 1 < 15 && grid[position.X + 1, position.Y].Type == TileType.Grass) return false;
-
-            if (position.Y - 1 >= 0 && position.Y - 1 < 15 && grid[position.X, position.Y - 1].Type == TileType.Ground ||
-                position.Y + 1 >= 0 && position.Y + 1 < 15 && grid[position.X, position.Y + 1].Type == TileType.Ground ||
-                position.X - 1 >= 0 && position.X - 1 < 15 && grid[position.X - 1, position.Y].Type == TileType.Ground ||
-                position.X + 1 >= 0 && position.X + 1 < 15 && grid[position.X + 1, position.Y].Type == TileType.Ground) return false;
-            
-
             var gridSize = new Vec2(grid.GetLength(1), grid.GetLength(0));
 
             if (!TileIsInsideGrid(gridSize, position)) return false;
@@ -94,6 +82,6 @@ namespace BattleshipsCore.Game.PlaceableObjects
                 return false;
 
             return true;
-        }
+        }        
     }
 }
