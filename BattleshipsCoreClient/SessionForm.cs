@@ -60,7 +60,7 @@ namespace BattleshipsCoreClient
         {
             var _ = await GameClientManager.Instance.DisconnectAsync();
 
-            await Program.SwitchToConnectionFormFrom(this);
+            await Facade.SwitchToConnectionFormFrom(this);
         }
 
         private void RefreshSessions(SendSessionListResponse sessionListResponse)
@@ -91,15 +91,15 @@ namespace BattleshipsCoreClient
             }
             else if (message is SendSessionKeyResponse sskr)
             {
-                await Program.SwitchToActiveSessionFormFromSessionList(sskr.SessionKey);
+                await Facade.SwitchToActiveSessionFormFromSessionList(sskr.SessionKey);
             }
             else if (message is JoinedSessionResponse jsr)
             {
-                await Program.SwitchToActiveSessionFormFromSessionList(jsr.SessionId);
+                await Facade.SwitchToActiveSessionFormFromSessionList(jsr.SessionId);
             }
             else if (message is DisconnectResponse)
             {
-                await Program.SwitchToConnectionFormFrom(this);
+                await Facade.SwitchToConnectionFormFrom(this);
             }
         }
     }
