@@ -2,7 +2,7 @@
 
 namespace BattleshipsCore.Game.GameGrid
 {
-    public struct Tile
+    public class Tile
     {
         [JsonProperty("t")]
         public TileType Type { get; set; }

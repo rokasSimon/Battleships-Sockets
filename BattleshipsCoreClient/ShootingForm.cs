@@ -70,15 +70,24 @@ namespace BattleshipsCoreClient
                     var button = new Button();
 
                     button.Name = $"{i}_{j}";
-                    button.BackColor = tile.Type.ToColor();
+                    //button.BackColor = tile.Type.ToColor();
+                    button.BackColor = Color.FromArgb(180, 218, 165, 32);
                     button.Dock = DockStyle.Fill;
                     button.Padding = new Padding(0);
                     button.Margin = new Padding(0);
-
+                    button.Image = new Bitmap(20, 20);
                     button.Click += Button_Click;
                     button.MouseDown += Button_MouseRightClick;
 
                     TileGrid.Controls.Add(button, j, i);
+                    if (tile.Type == TileType.Water || tile.Type == TileType.Ship || tile.Type == TileType.Tank)
+                    {
+                        var specificButton = new WaterDecorator(button);
+                    }
+                    if (tile.Type == TileType.Grass)
+                    {
+                        var specificButton = new GrassDecorator(button);
+                    }
                 }
             }
         }
@@ -200,16 +209,24 @@ namespace BattleshipsCoreClient
             var tiles = new List<Vec2> { update.TilePosition };
 
             SetTiles(tiles, update.NewType);
-            ColorTiles(tiles, update.NewType.ToColor());
+            ColorTiles(tiles, update.NewType);
         }
 
-        private void ColorTiles(List<Vec2> tiles, Color newColor)
+        private void ColorTiles(List<Vec2> tiles, TileType type)
         {
             foreach (var item in tiles)
             {
-                var selBut = TileGrid.GetControlFromPosition(item.Y, item.X);
+                Button selBut = (Button)TileGrid.GetControlFromPosition(item.Y, item.X);//as Button;
 
-                selBut.BackColor = newColor;
+                if (type == TileType.Hit)
+                {
+                    var buttom = new ShootMarkDecorator(selBut);
+                }
+                if (type == TileType.Miss)
+                {
+                    var buttom = new MissMarkDecorator(selBut);
+                }
+                //selBut.BackColor = newColor;
             }
         }
 

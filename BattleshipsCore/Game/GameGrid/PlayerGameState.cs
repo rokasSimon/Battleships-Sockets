@@ -1,4 +1,5 @@
 ﻿using BattleshipsCore.Data;
+using BattleshipsCore.Data.Surface;
 using BattleshipsCore.Server;
 
 namespace BattleshipsCore.Game.GameGrid
@@ -27,7 +28,17 @@ namespace BattleshipsCore.Game.GameGrid
             TileToUpdate = new List<TileUpdate>();
             GameState = GameState.EnemyTurn;
             Size = size;
-            OriginalGrid = new Tile[size.X, size.Y];
+            //OriginalGrid = new Tile[size.X, size.Y];
+            OriginalGrid = initialize(size);
+        }
+        private Tile[,] initialize(Vec2 siz)
+        {
+            Tile[,] arr = new Tile[siz.X, siz.Y];
+            arr = new GrassCreator().FactoryMethod(siz, arr);
+            arr = new GroundCreator().FactoryMethod(siz, arr);
+            arr = new WaterCreator().FactoryMethod(siz, arr);
+
+            return arr;
         }
 
         public bool UnsetMap()
