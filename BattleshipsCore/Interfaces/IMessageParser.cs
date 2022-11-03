@@ -7,6 +7,6 @@ namespace BattleshipsCore.Interfaces
     {
         TRequest ParseRequest<TRequest>(string message) where TRequest : Request;
         TMessage ParseResponse<TMessage>(string message) where TMessage : Message;
-        string SerializeMessage(Message message);
+        string SerializeMessage(Message message, bool useXml = false);
     }
 }

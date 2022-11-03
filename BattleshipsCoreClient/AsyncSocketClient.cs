@@ -144,8 +144,7 @@ namespace BattleshipsCoreClient
         {
             var messages = new List<Message>();
 
-            var splits = response.Split("<EOF>", StringSplitOptions.RemoveEmptyEntries); //response.Replace("<EOF>", "\0");
-            //var splits = separated.Split('\0');
+            var splits = response.Split("<EOF>", StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var msg in splits)
             {
