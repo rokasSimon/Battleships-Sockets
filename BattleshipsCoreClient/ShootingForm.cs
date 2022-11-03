@@ -226,6 +226,7 @@ namespace BattleshipsCoreClient
                 {
                     var buttom = new MissMarkDecorator(selBut);
                 }
+
             }
         }
 
