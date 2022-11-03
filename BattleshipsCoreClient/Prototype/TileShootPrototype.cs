@@ -3,36 +3,36 @@ using BattleshipsCore.Game.ShootingStrategy;
 
 namespace BattleshipsCoreClient.Prototype
 {
-    public class TileShootPrototype
+    public class TileShootPrototype : DeepPrototype
     {
         SingleTileShooting SingleTileShoot;
         AreaShooting AreaShoot;
-        HorizontalLineShooting horizontalLineShoot;
-        VerticalLineShooting verticalLineShoot;
+        HorizontalLineShooting HorizontalLineShoot;
+        VerticalLineShooting VerticalLineShoot;
 
         public TileShootPrototype(SingleTileShooting singleTileShoot, AreaShooting areaShoot, HorizontalLineShooting horizontalLineShoot, VerticalLineShooting verticalLineShoot)
         {
             SingleTileShoot = singleTileShoot;
             AreaShoot = areaShoot;
-            this.horizontalLineShoot = horizontalLineShoot;
-            this.verticalLineShoot = verticalLineShoot;
+            this.HorizontalLineShoot = horizontalLineShoot;
+            this.VerticalLineShoot = verticalLineShoot;
         }
 
-        public SingleTileShooting CloneSingle()
+        public override SingleTileShooting CloneSingle()
         {             
             return SingleTileShoot;
         }
-        public AreaShooting CloneArena()
+        public override AreaShooting CloneArena()
         {
             return AreaShoot;
         }
-        public VerticalLineShooting CloneVertical()
+        public override VerticalLineShooting CloneVertical()
         {
-            return verticalLineShoot;
+            return VerticalLineShoot;
         }
-        public HorizontalLineShooting CloneHorizontal()
+        public override HorizontalLineShooting CloneHorizontal()
         {
-            return horizontalLineShoot;
+            return HorizontalLineShoot;
         }
     }
 }

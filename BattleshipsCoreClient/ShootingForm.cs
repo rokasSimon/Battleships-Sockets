@@ -19,9 +19,9 @@ namespace BattleshipsCoreClient
 
         List<SaveTileState> states = new List<SaveTileState>();
         private ShootingStrategy shootingStrategy { get; set; }
-        private TileShootPrototype ShootPrototype = new TileShootPrototype(new SingleTileShooting(),
+        private DeepPrototype ShootPrototype = new TileShootPrototype(new SingleTileShooting(),
          new AreaShooting(), new HorizontalLineShooting(), new VerticalLineShooting());
-        private ShootPrototype Repeat = new RepeatShoot();
+        private ShallowPrototype Repeat = new RepeatShoot();
 
         public ShootingForm()
         {

@@ -25,27 +25,27 @@ namespace BattleshipsCoreClient
 
         private readonly PlaceableObject[] ship1 = new[]
         {           
-            new Ship1(1, "Ship A1", 3, 1)                                   
+            new Boat(1, "Boat", 3, 1)                                   
         };
         private readonly PlaceableObject[] ship2 = new[]
         {
-            new Ship2(2, "Ship A2", 2, 2)                                   
+            new SailBoat(2, "TinyShip", 2, 2)                                   
         };
         private readonly PlaceableObject[] ship3 = new[]
         {
-            new Ship3(3, "Ship A3", 1, 3)                                   
+            new Brig(3, "Brig", 1, 3)                                   
         };
         private readonly PlaceableObject[] superShip1 = new[]
         {
-            new SuperShip1(1, "Super Ship S1", 8, 4)                                   
+            new NarrowBoat(1, "NarrowBoat", 8, 4)                                   
         };
         private readonly PlaceableObject[] superShip2 = new[]
         {
-            new SuperShip2(4, "Super Ship S2", 2, 5)                                   
+            new Cruise(4, "Cruise", 2, 5)                                   
         };
         private readonly PlaceableObject[] superShip3 = new[]
         {
-            new SuperShip3(5, "Super Ship S3", 4, 6)                                   
+            new Tanker(5, "Tanker", 4, 6)                                   
         };
 
         public PlacementForm(int level)

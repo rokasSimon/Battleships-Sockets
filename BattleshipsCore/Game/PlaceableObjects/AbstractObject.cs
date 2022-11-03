@@ -13,13 +13,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
         public override Product_Level_One_Ships CreateLevel1(int type, string name, int length, int max)
         {
             if(type == 1){
-                return new Ship1(length, name, max, type);
+                return new Boat(length, name, max, type);
             }
             else if(type == 2){
-                return new Ship2(length, name, max, type);
+                return new SailBoat(length, name, max, type);
             }
             else if(type == 3){
-                return new Ship3(length, name, max, type);
+                return new Brig(length, name, max, type);
             }
             return null;
         }
@@ -38,13 +38,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
         public override Product_Level_Two_Ships CreateLevel2(int type, string name, int length, int max)
         {
             if(type == 4){
-                return new SuperShip1(length, name, max, type);
+                return new NarrowBoat(length, name, max, type);
             }
             else if(type == 5){
-                return new SuperShip2(length, name, max, type);
+                return new Cruise(length, name, max, type);
             }
             else if(type == 6){
-                return new SuperShip3(length, name, max, type);
+                return new Tanker(length, name, max, type);
             }
             return null;
         }
@@ -63,10 +63,11 @@ namespace BattleshipsCore.Game.PlaceableObjects
         {
         }     
     }
-    public class Ship1 : Product_Level_One_Ships
+    public class Boat : Product_Level_One_Ships
     {
+        public override TileType Type => TileType.Ship;
         public int ShipType {get;set;}
-        public Ship1(int length, string name, int max, int shipType) : base(length, name, max)
+        public Boat(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -74,10 +75,11 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv1 " + Name + " was generated");
         }
     }
-    public class Ship2 : Product_Level_One_Ships
+    public class SailBoat : Product_Level_One_Ships
     {
+        public override TileType Type => TileType.Ship;
         public int ShipType {get;set;}
-        public Ship2(int length, string name, int max, int shipType) : base(length, name, max)
+        public SailBoat(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -85,10 +87,11 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv1 " + Name + " was generated");
         }
     }
-    public class Ship3 : Product_Level_One_Ships
+    public class Brig : Product_Level_One_Ships
     {
+        public override TileType Type => TileType.Ship;
         public int ShipType {get;set;}
-        public Ship3(int length, string name, int max, int shipType) : base(length, name, max)
+        public Brig(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -96,10 +99,11 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv1 " + Name + " was generated");
         }
     }
-    public class SuperShip1 : Product_Level_Two_Ships
+    public class NarrowBoat : Product_Level_Two_Ships
     {
+        public override TileType Type => TileType.NarrowBoat;
         public int ShipType {get;set;}
-        public SuperShip1(int length, string name, int max, int shipType) : base(length, name, max)
+        public NarrowBoat(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -107,10 +111,11 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv2 " + Name + " was generated");
         }
     }
-    public class SuperShip2 : Product_Level_Two_Ships
+    public class Cruise : Product_Level_Two_Ships
     {
+        public override TileType Type => TileType.Cruise;
         public int ShipType {get;set;}
-        public SuperShip2(int length, string name, int max, int shipType) : base(length, name, max)
+        public Cruise(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -118,10 +123,11 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv2 " + Name + " was generated");
         }
     }
-    public class SuperShip3 : Product_Level_Two_Ships
+    public class Tanker : Product_Level_Two_Ships
     {
+        public override TileType Type => TileType.Tanker;
         public int ShipType {get;set;}
-        public SuperShip3(int length, string name, int max, int shipType) : base(length, name, max)
+        public Tanker(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
