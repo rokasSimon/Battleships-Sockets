@@ -226,7 +226,6 @@ namespace BattleshipsCoreClient
                 {
                     var buttom = new MissMarkDecorator(selBut);
                 }
-                //selBut.BackColor = newColor;
             }
         }
 
@@ -244,18 +243,18 @@ namespace BattleshipsCoreClient
         {
             ClearData();
             MessageBox.Show("You won!", "Game Over");
-            Program.PlacementForm = new PlacementForm(2);
+            Facade.PlacementForm = new PlacementForm(2);
             await GameClientManager.Instance.LeaveSessionAsync();
-            await Program.LeaveShootingForm();
+            await Facade.LeaveShootingForm();
         }
 
         private async Task LoseAsync()
         {
             ClearData();
             MessageBox.Show("You lost!", "Game Over");
-            Program.PlacementForm = new PlacementForm(2);
+            Facade.PlacementForm = new PlacementForm(2);
             await GameClientManager.Instance.LeaveSessionAsync();
-            await Program.LeaveShootingForm();
+            await Facade.LeaveShootingForm();
         }
 
         private async Task QuitGameAsync()
@@ -264,7 +263,7 @@ namespace BattleshipsCoreClient
             MessageBox.Show("Critical error occured - disconnecting.", "Error");
 
             await GameClientManager.Instance.DisconnectAsync();
-            await Program.LeaveShootingForm();
+            await Facade.LeaveShootingForm();
         }
 
         private void GrantTurn()
@@ -319,11 +318,11 @@ namespace BattleshipsCoreClient
             {
                 GameClientManager.Instance.ActiveSession = null;
 
-                await Program.LeaveShootingForm();
+                await Facade.LeaveShootingForm();
             }
             else if (message is DisconnectResponse dr)
             {
-                await Program.SwitchToConnectionFormFrom(this);
+                await Facade.SwitchToConnectionFormFrom(this);
             }
             else if (message is SendTileUpdateResponse stur)
             {

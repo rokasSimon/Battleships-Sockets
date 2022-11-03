@@ -36,7 +36,7 @@ namespace BattleshipsCoreClient
             {
                 MessageBox.Show("Session no longer exists.", "Error");
 
-                await Program.SwitchToSessionListFrom(this);
+                await Facade.SwitchToSessionListFrom(this);
                 return;
             }
 
@@ -50,7 +50,7 @@ namespace BattleshipsCoreClient
             {
                 MessageBox.Show("Session no longer exists.", "Error");
 
-                await Program.SwitchToSessionListFrom(this);
+                await Facade.SwitchToSessionListFrom(this);
                 return;
             }
 
@@ -90,11 +90,11 @@ namespace BattleshipsCoreClient
             }
             else if (message is StartedGameResponse sgr)
             {
-                await Program.SwitchToPlacementFormFromActiveSession(SessionData!.SessionKey, GameClientManager.Instance.PlayerName);
+                await Facade.SwitchToPlacementFormFromActiveSession(SessionData!.SessionKey, GameClientManager.Instance.PlayerName);
             }
             else if (message is LeftSessionResponse lsr)
             {
-                await Program.SwitchToSessionListFrom(this);
+                await Facade.SwitchToSessionListFrom(this);
             }
         }
     }
