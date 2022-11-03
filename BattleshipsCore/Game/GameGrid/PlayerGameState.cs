@@ -1,4 +1,4 @@
-﻿using BattleshipsCore.Data;
+using BattleshipsCore.Data;
 using BattleshipsCore.Data.Surface;
 using BattleshipsCore.Server;
 
@@ -39,6 +39,13 @@ namespace BattleshipsCore.Game.GameGrid
             arr = new WaterCreator().FactoryMethod(siz, arr);
 
             return arr;
+        }
+
+        public bool UnsetMap()
+        {
+            var removedTiles = _setMaps.Pop();
+
+            return removedTiles != null;
         }
 
         public bool UnsetMap()

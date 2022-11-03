@@ -112,6 +112,7 @@ namespace BattleshipsCoreClient
         }
         private async void Button_MouseRightClick(object? sender, MouseEventArgs e)
         {
+
             if (InputDisabled) return;
 
             var button = (Button)sender!;
@@ -127,6 +128,7 @@ namespace BattleshipsCoreClient
 
             if (!states.Any(x => x.x.Equals(x)) && !states.Any(x => x.y.Equals(y)) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+
                 var specificButton = new MarkedToShoot(button);
 
                 specificButton.Name = $"{y}_{x}";
@@ -137,6 +139,7 @@ namespace BattleshipsCoreClient
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to shoot")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+
                 var specificButtonShip = new SuspectShip(button);
 
                 specificButtonShip.Name = $"{y}_{x}";
@@ -150,6 +153,7 @@ namespace BattleshipsCoreClient
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to suspect ship")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+
                 var specificButtonTank = new SuspectTank(button);
 
                 specificButtonTank.Name = $"{y}_{x}";
@@ -163,6 +167,7 @@ namespace BattleshipsCoreClient
             }
             else if (states.Contains(new SaveTileState(x, y, "marked to suspect tank")) && e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+
                 var specificButton = new MarkedToShoot(button);
 
                 specificButton.Name = $"{y}_{x}";
@@ -239,6 +244,7 @@ namespace BattleshipsCoreClient
             ClearData();
             MessageBox.Show("You won!", "Game Over");
             Facade.PlacementForm = new PlacementForm(2);
+
             await GameClientManager.Instance.LeaveSessionAsync();
             await Facade.LeaveShootingForm();
         }
@@ -248,6 +254,7 @@ namespace BattleshipsCoreClient
             ClearData();
             MessageBox.Show("You lost!", "Game Over");
             Facade.PlacementForm = new PlacementForm(2);
+
             await GameClientManager.Instance.LeaveSessionAsync();
             await Facade.LeaveShootingForm();
         }

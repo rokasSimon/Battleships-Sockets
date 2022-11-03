@@ -1,4 +1,5 @@
 using BattleshipsCore.Game.GameGrid;
+using BattleshipsCore.Game.PlaceableObjects.Builder;
 using Newtonsoft.Json;
 namespace BattleshipsCore.Game.PlaceableObjects
 {
@@ -10,16 +11,20 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
     public class Level1Factory : Abstract_Level
     {
+
+        ShipDirector director = new ShipDirector();
+
         public override Product_Level_One_Ships CreateLevel1(int type, string name, int length, int max)
         {
             if(type == 1){
-                return new Ship1(length, name, max, type);
+                return director.Construct(new OneSailShipBuilder(length, name, max, type));
             }
             else if(type == 2){
-                return new Ship2(length, name, max, type);
+                return director.Construct(new TwoSailShipBuilder(length, name, max, type));
             }
             else if(type == 3){
-                return new Ship3(length, name, max, type);
+                return director.Construct(new ThreeSailShipBuilder(length, name, max, type));
+
             }
             return null;
         }
@@ -38,19 +43,25 @@ namespace BattleshipsCore.Game.PlaceableObjects
         public override Product_Level_Two_Ships CreateLevel2(int type, string name, int length, int max)
         {
             if(type == 4){
-                return new SuperShip1(length, name, max, type);
+
+                return new OneSailSuperShip(length, name, max, type);
             }
             else if(type == 5){
-                return new SuperShip2(length, name, max, type);
+                return new TwoSailSuperShip(length, name, max, type);
             }
             else if(type == 6){
-                return new SuperShip3(length, name, max, type);
+                return new ThreeSailSuperShip(length, name, max, type);
+
             }
             return null;
         }
     }
     public abstract class Product_Level_One_Ships : Ship
     {
+
+        public int ShootingRange { get; set; }
+        public int NavalArtillery { get; set; }
+
         public abstract void GenerateShip();
         public Product_Level_One_Ships(int length, string name, int max): base(name, max, length)
         {
@@ -63,43 +74,51 @@ namespace BattleshipsCore.Game.PlaceableObjects
         {
         }     
     }
-    public class Ship1 : Product_Level_One_Ships
+
+    public class OneSailShip : Product_Level_One_Ships
     {
         public int ShipType {get;set;}
-        public Ship1(int length, string name, int max, int shipType) : base(length, name, max)
+        public OneSailShip(int length, string name, int max, int shipType) : base(length, name, max)
+
         {
             this.ShipType = shipType;
         }
         public override void GenerateShip(){
-            Console.WriteLine("Lv1 " + Name + " was generated");
+
+            Console.WriteLine("Lv1 " + Name + " was generated" + " | ShootingRange: " + ShootingRange + " | NavalArtillery: " + NavalArtillery);
         }
     }
-    public class Ship2 : Product_Level_One_Ships
+    public class TwoSailShip : Product_Level_One_Ships
     {
         public int ShipType {get;set;}
-        public Ship2(int length, string name, int max, int shipType) : base(length, name, max)
+        public TwoSailShip(int length, string name, int max, int shipType) : base(length, name, max)
+
         {
             this.ShipType = shipType;
         }
         public override void GenerateShip(){
-            Console.WriteLine("Lv1 " + Name + " was generated");
+
+            Console.WriteLine("Lv1 " + Name + " was generated" + " | ShootingRange: " + ShootingRange + " | NavalArtillery: " + NavalArtillery);
         }
     }
-    public class Ship3 : Product_Level_One_Ships
+    public class ThreeSailShip : Product_Level_One_Ships
     {
         public int ShipType {get;set;}
-        public Ship3(int length, string name, int max, int shipType) : base(length, name, max)
+        public ThreeSailShip(int length, string name, int max, int shipType) : base(length, name, max)
+
         {
             this.ShipType = shipType;
         }
         public override void GenerateShip(){
-            Console.WriteLine("Lv1 " + Name + " was generated");
+
+            Console.WriteLine("Lv1 " + Name + " was generated" + " | ShootingRange: " + ShootingRange + " | NavalArtillery: " + NavalArtillery);
         }
     }
-    public class SuperShip1 : Product_Level_Two_Ships
+    public class OneSailSuperShip : Product_Level_Two_Ships
     {
         public int ShipType {get;set;}
-        public SuperShip1(int length, string name, int max, int shipType) : base(length, name, max)
+        public OneSailSuperShip(int length, string name, int max, int shipType) : base(length, name, max)
+
         {
             this.ShipType = shipType;
         }
@@ -107,10 +126,12 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv2 " + Name + " was generated");
         }
     }
-    public class SuperShip2 : Product_Level_Two_Ships
+
+    public class TwoSailSuperShip : Product_Level_Two_Ships
     {
         public int ShipType {get;set;}
-        public SuperShip2(int length, string name, int max, int shipType) : base(length, name, max)
+        public TwoSailSuperShip(int length, string name, int max, int shipType) : base(length, name, max)
+
         {
             this.ShipType = shipType;
         }
@@ -118,10 +139,12 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv2 " + Name + " was generated");
         }
     }
-    public class SuperShip3 : Product_Level_Two_Ships
+
+    public class ThreeSailSuperShip : Product_Level_Two_Ships
     {
         public int ShipType {get;set;}
-        public SuperShip3(int length, string name, int max, int shipType) : base(length, name, max)
+        public ThreeSailSuperShip(int length, string name, int max, int shipType) : base(length, name, max)
+
         {
             this.ShipType = shipType;
         }

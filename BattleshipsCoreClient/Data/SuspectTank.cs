@@ -8,8 +8,10 @@ namespace BattleshipsCoreClient.Data
 {
     public class SuspectTank : ButtonDecorator
     {
+
         Button newBase;
         public SuspectTank(Button basee) : base(basee)
+
         {
             newBase = basee;
             Bitmap bmp = new Bitmap(20, 20);
