@@ -2,6 +2,7 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Game.PlaceableObjects.Builder;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCore.Server;
@@ -24,32 +25,34 @@ namespace BattleshipsCoreClient
         private bool InputDisabled { get; set; }
 
         private readonly PlaceableObject[] ship1 = new[]
-        {           
-            new Ship1(1, "Ship A1", 3, 1)                                   
+
+        {
+             new ShipDirector().Construct(new OneSailShipBuilder(1, "Ship A1", 3, 1))                              
         };
         private readonly PlaceableObject[] ship2 = new[]
         {
-            new Ship2(2, "Ship A2", 2, 2)                                   
+            new ShipDirector().Construct(new TwoSailShipBuilder(2, "Ship A2", 2, 2))
         };
         private readonly PlaceableObject[] ship3 = new[]
         {
-            new Ship3(3, "Ship A3", 1, 3)                                   
+            new ShipDirector().Construct(new ThreeSailShipBuilder(3, "Ship A3", 1, 3))
         };
         private readonly PlaceableObject[] superShip1 = new[]
         {
-            new SuperShip1(1, "Super Ship S1", 8, 4)                                   
+            new OneSailSuperShip(1, "Super Ship S1", 8, 4)                                   
         };
         private readonly PlaceableObject[] superShip2 = new[]
         {
-            new SuperShip2(4, "Super Ship S2", 2, 5)                                   
+            new TwoSailSuperShip(4, "Super Ship S2", 2, 5)                                   
         };
         private readonly PlaceableObject[] superShip3 = new[]
         {
-            new SuperShip3(5, "Super Ship S3", 4, 6)                                   
+            new ThreeSailSuperShip(5, "Super Ship S3", 4, 6)                                   
         };
 
         public PlacementForm(int level)
         {
+
             InitializeComponent();
 
             InputDisabled = false;
@@ -225,11 +228,13 @@ namespace BattleshipsCoreClient
             {
                 var hoverCommand = _executedCommandStack.Pop();
 
+
                 hoverCommand!.Undo();
             }
 
             command.Execute();
         }
+
 
         private void PlacementForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
@@ -264,6 +269,13 @@ namespace BattleshipsCoreClient
             else if (message is LeftSessionResponse lsr)
             {
                 await Facade.SwitchToSessionListFrom(this);
+            }
+            else if (message is OkResponse ok)
+            {
+                Invoke(() =>
+                {
+                    MessageBox.Show(ok.Text, "Server Message");
+                });
             }
             else if (message is OkResponse ok)
             {

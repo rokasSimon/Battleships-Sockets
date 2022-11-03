@@ -7,10 +7,12 @@ using System.Windows.Forms;
 
 namespace BattleshipsCoreClient.Data
 {
+
     public abstract class ButtonDecorator : Button
     {
         Button newBase;
         protected ButtonDecorator(Button basee)
+
         {
             newBase = basee;
         }

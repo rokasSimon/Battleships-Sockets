@@ -13,8 +13,10 @@ namespace BattleshipsCoreClient
         [STAThread]
         static void Main()
         {
+
             Client client = new Client(new Facade());
             client.startGame();
+
         }
 
 
