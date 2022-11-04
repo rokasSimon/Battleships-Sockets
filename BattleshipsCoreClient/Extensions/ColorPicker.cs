@@ -8,7 +8,8 @@ namespace BattleshipsCoreClient.Extensions
         {
             return type switch
             {
-                TileType.Ground => Color.LightGreen,
+                TileType.Ground => Color.SandyBrown,
+                TileType.Grass => Color.Green,
                 TileType.Ship => Color.Blue,
                 TileType.Hit => Color.Red,
                 TileType.Tank=> Color.Brown,

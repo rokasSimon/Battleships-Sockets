@@ -2,6 +2,7 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
+using BattleshipsCore.Game.PlaceableObjects.Builder;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCore.Server;
@@ -281,11 +282,11 @@ namespace BattleshipsCoreClient
             {
                 InputDisabled = true;
 
-                await Program.EnableShootingForm();
+                await Facade.EnableShootingForm();
             }
             else if (message is LeftSessionResponse lsr)
             {
-                await Program.SwitchToSessionListFrom(this);
+                await Facade.SwitchToSessionListFrom(this);
             }
             else if (message is OkResponse ok)
             {
