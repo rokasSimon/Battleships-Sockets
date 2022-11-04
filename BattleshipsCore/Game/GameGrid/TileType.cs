@@ -10,9 +10,10 @@
         Unavailable = 5,
         Destroyed = 6,
         Tank = 7,
-        NarrowBoat = 8,
-        Cruise = 9,
-        Tanker = 10,
+        Grass = 8,
+        NarrowBoat = 9,
+        Cruise = 10,
+        Tanker = 11,
 
 
 
