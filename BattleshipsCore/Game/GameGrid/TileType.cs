@@ -11,5 +11,8 @@
         Destroyed = 6,
         Tank = 7,
         Grass = 8,
+        NarrowBoat = 9,
+        Cruise = 10,
+        Tanker = 11,
     }
 }

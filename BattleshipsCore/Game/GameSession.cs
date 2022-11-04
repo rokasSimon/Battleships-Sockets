@@ -185,8 +185,12 @@ namespace BattleshipsCore.Game
                 var newTileType = shotTile switch
                 {
                     TileType.Ship => TileType.Hit,
-                    TileType.Tank => TileType.Hit,
+                    TileType.Tank => TileType.Hit,                    
+                    TileType.NarrowBoat => TileType.Hit,
+                    TileType.Cruise => TileType.Hit,
+                    TileType.Tanker => TileType.Hit,
                     TileType.Hit => TileType.Hit,
+
                     _ => TileType.Miss,
                 };
 

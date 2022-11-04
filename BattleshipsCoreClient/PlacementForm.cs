@@ -26,6 +26,7 @@ namespace BattleshipsCoreClient
 
         private readonly PlaceableObject[] ship1 = new[]
         {
+            /*{
              new ShipDirector().Construct(new OneSailShipBuilder(1, "Ship A1", 3, 1))                              
         };
         private readonly PlaceableObject[] ship2 = new[]
@@ -46,7 +47,28 @@ namespace BattleshipsCoreClient
         };
         private readonly PlaceableObject[] superShip3 = new[]
         {
-            new ThreeSailSuperShip(5, "Super Ship S3", 4, 6)                                   
+            new ThreeSailSuperShip(5, "Super Ship S3", 4, 6) */           
+            new Boat(1, "Boat", 3, 1)                                   
+        };
+        private readonly PlaceableObject[] ship2 = new[]
+        {
+            new SailBoat(2, "TinyShip", 2, 2)                                   
+        };
+        private readonly PlaceableObject[] ship3 = new[]
+        {
+            new Brig(3, "Brig", 1, 3)                                   
+        };
+        private readonly PlaceableObject[] superShip1 = new[]
+        {
+            new NarrowBoat(1, "NarrowBoat", 8, 4)                                   
+        };
+        private readonly PlaceableObject[] superShip2 = new[]
+        {
+            new Cruise(4, "Cruise", 2, 5)                                   
+        };
+        private readonly PlaceableObject[] superShip3 = new[]
+        {
+            new Tanker(5, "Tanker", 4, 6)                                   
         };
 
         public PlacementForm(int level)

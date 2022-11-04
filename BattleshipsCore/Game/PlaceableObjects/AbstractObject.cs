@@ -15,14 +15,17 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
         public override Product_Level_One_Ships CreateLevel1(int type, string name, int length, int max)
         {
-            if(type == 1){
-                return director.Construct(new OneSailShipBuilder(length, name, max, type));
+            if(type == 1){  
+                //return director.Construct(new OneSailShipBuilder(length, name, max, type));              
+                return new Boat(length, name, max, type);
             }
             else if(type == 2){
-                return director.Construct(new TwoSailShipBuilder(length, name, max, type));
+                //return director.Construct(new TwoSailShipBuilder(length, name, max, type));
+                return new SailBoat(length, name, max, type);
             }
             else if(type == 3){
-                return director.Construct(new ThreeSailShipBuilder(length, name, max, type));
+                //return director.Construct(new ThreeSailShipBuilder(length, name, max, type));
+                return new Brig(length, name, max, type);
             }
             return null;
         }
@@ -41,13 +44,16 @@ namespace BattleshipsCore.Game.PlaceableObjects
         public override Product_Level_Two_Ships CreateLevel2(int type, string name, int length, int max)
         {
             if(type == 4){
-                return new OneSailSuperShip(length, name, max, type);
+                //return new OneSailSuperShip(length, name, max, type);
+                return new NarrowBoat(length, name, max, type);
             }
             else if(type == 5){
-                return new TwoSailSuperShip(length, name, max, type);
+                //return new TwoSailSuperShip(length, name, max, type);
+                return new Cruise(length, name, max, type);
             }
             else if(type == 6){
-                return new ThreeSailSuperShip(length, name, max, type);
+                //return new ThreeSailSuperShip(length, name, max, type);
+                return new Tanker(length, name, max, type);
             }
             return null;
         }
@@ -69,10 +75,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
         {
         }     
     }
-    public class OneSailShip : Product_Level_One_Ships
+
+    public class Boat : Product_Level_One_Ships
     {
+        public override TileType Type => TileType.Ship;
         public int ShipType {get;set;}
-        public OneSailShip(int length, string name, int max, int shipType) : base(length, name, max)
+
+        public Boat(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -80,10 +89,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv1 " + Name + " was generated" + " | ShootingRange: " + ShootingRange + " | NavalArtillery: " + NavalArtillery);
         }
     }
-    public class TwoSailShip : Product_Level_One_Ships
+
+    public class SailBoat : Product_Level_One_Ships
     {
+        public override TileType Type => TileType.Ship;
         public int ShipType {get;set;}
-        public TwoSailShip(int length, string name, int max, int shipType) : base(length, name, max)
+
+        public SailBoat(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -91,10 +103,12 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv1 " + Name + " was generated" + " | ShootingRange: " + ShootingRange + " | NavalArtillery: " + NavalArtillery);
         }
     }
-    public class ThreeSailShip : Product_Level_One_Ships
+    public class Brig : Product_Level_One_Ships
     {
+        public override TileType Type => TileType.Ship;
         public int ShipType {get;set;}
-        public ThreeSailShip(int length, string name, int max, int shipType) : base(length, name, max)
+
+        public Brig(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -102,10 +116,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv1 " + Name + " was generated" + " | ShootingRange: " + ShootingRange + " | NavalArtillery: " + NavalArtillery);
         }
     }
-    public class OneSailSuperShip : Product_Level_Two_Ships
+
+    public class NarrowBoat : Product_Level_Two_Ships
     {
+        public override TileType Type => TileType.NarrowBoat;
         public int ShipType {get;set;}
-        public OneSailSuperShip(int length, string name, int max, int shipType) : base(length, name, max)
+
+        public NarrowBoat(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -113,10 +130,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv2 " + Name + " was generated");
         }
     }
-    public class TwoSailSuperShip : Product_Level_Two_Ships
+
+    public class Cruise : Product_Level_Two_Ships
     {
+        public override TileType Type => TileType.Cruise;
         public int ShipType {get;set;}
-        public TwoSailSuperShip(int length, string name, int max, int shipType) : base(length, name, max)
+
+        public Cruise(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
@@ -124,10 +144,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
             Console.WriteLine("Lv2 " + Name + " was generated");
         }
     }
-    public class ThreeSailSuperShip : Product_Level_Two_Ships
+
+    public class Tanker : Product_Level_Two_Ships
     {
+        public override TileType Type => TileType.Tanker;
         public int ShipType {get;set;}
-        public ThreeSailSuperShip(int length, string name, int max, int shipType) : base(length, name, max)
+
+        public Tanker(int length, string name, int max, int shipType) : base(length, name, max)
         {
             this.ShipType = shipType;
         }
