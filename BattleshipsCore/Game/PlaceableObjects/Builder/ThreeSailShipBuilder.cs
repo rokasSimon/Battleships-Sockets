@@ -11,7 +11,7 @@ namespace BattleshipsCore.Game.PlaceableObjects.Builder
     {
         public ThreeSailShipBuilder(int type, string name, int length, int max)
         {
-            ship = new ThreeSailShip(length, name, max, type);
+            ship = new Brig(length, name, max, type);
         }
 
         public override ShipBuilder BuildShootingRange()
