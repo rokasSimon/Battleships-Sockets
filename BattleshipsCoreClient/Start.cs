@@ -19,9 +19,9 @@ namespace BattleshipsCoreClient
 
         public void ShowWindow()
         {
-            Program.SessionForm.Hide();
-            Program.ActiveSessionForm.Hide();
-            Program.PlacementForm.Hide();
+            Facade.SessionForm.Hide();
+            Facade.ActiveSessionForm.Hide();
+            Facade.PlacementForm.Hide();
 
             Show();
         }
@@ -75,7 +75,7 @@ namespace BattleshipsCoreClient
             {
                 GameClientManager.Instance.PlayerName = _username;
 
-                await Program.SwitchToSessionListFrom(this);
+                await Facade.SwitchToSessionListFrom(this);
             }
             else if (message is FailResponse)
             {

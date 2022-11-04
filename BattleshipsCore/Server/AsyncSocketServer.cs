@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using Newtonsoft.Json;
+using BattleshipsCore.Communication;
 
 namespace BattleshipsCore.Server
 {
@@ -65,7 +66,21 @@ namespace BattleshipsCore.Server
                 var response = Encoding.UTF8.GetString(client.Buffer, 0, bytesReceived);
                 ServerLogger.Instance.LogInfo($"Received message: '{response}';");
 
-                var command = _commandFactory.ParseRequest<Request>(response);
+                ParseableMessage wrappedMessage = new Json(response);
+
+                // Try xml if json does not work
+                if (!wrappedMessage.IsParseable()) wrappedMessage = new XmlAdapter(response);
+                if (!wrappedMessage.IsParseable())
+                {
+                    ServerLogger.Instance.LogWarning("Received unparseable message;"); return;
+                }
+
+                var command = wrappedMessage.Parse<Request>();
+
+                if (command == null)
+                {
+                    ServerLogger.Instance.LogError("Deserialization error;"); return;
+                }
 
                 var responseTargets = command.Execute(client.Id);
 

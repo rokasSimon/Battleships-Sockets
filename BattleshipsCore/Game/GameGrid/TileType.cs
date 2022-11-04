@@ -14,8 +14,5 @@
         NarrowBoat = 9,
         Cruise = 10,
         Tanker = 11,
-
-
-
     }
 }

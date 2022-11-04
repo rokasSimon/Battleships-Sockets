@@ -45,6 +45,16 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
         public override bool IsPlaceable(Tile[,] grid, Vec2 position)
         {
+            if (position.Y - 1 >= 0 && position.Y - 1 < 15 && grid[position.X, position.Y - 1].Type == TileType.Grass ||
+               position.Y + 1 >= 0 && position.Y + 1 < 15 && grid[position.X, position.Y + 1].Type == TileType.Grass ||
+               position.X - 1 >= 0 && position.X - 1 < 15 && grid[position.X - 1, position.Y].Type == TileType.Grass ||
+               position.X + 1 >= 0 && position.X + 1 < 15 && grid[position.X + 1, position.Y].Type == TileType.Grass) return false;
+
+            if (position.Y - 1 >= 0 && position.Y - 1 < 15 && grid[position.X, position.Y - 1].Type == TileType.Ground ||
+                position.Y + 1 >= 0 && position.Y + 1 < 15 && grid[position.X, position.Y + 1].Type == TileType.Ground ||
+                position.X - 1 >= 0 && position.X - 1 < 15 && grid[position.X - 1, position.Y].Type == TileType.Ground ||
+                position.X + 1 >= 0 && position.X + 1 < 15 && grid[position.X + 1, position.Y].Type == TileType.Ground) return false;
+
             var gridSize = new Vec2(grid.GetLength(1), grid.GetLength(0));
 
             if (!TileIsInsideGrid(gridSize, position)) return false;

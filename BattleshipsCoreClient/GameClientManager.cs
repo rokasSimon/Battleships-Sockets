@@ -4,7 +4,7 @@ using System.Net;
 
 namespace BattleshipsCoreClient
 {
-    internal class GameClientManager
+    public class GameClientManager
     {
         private static readonly object _lock = new();
         private static GameClientManager? _instance;
