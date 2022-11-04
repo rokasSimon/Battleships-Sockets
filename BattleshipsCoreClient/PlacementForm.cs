@@ -25,38 +25,16 @@ namespace BattleshipsCoreClient
         private bool InputDisabled { get; set; }
 
         private readonly PlaceableObject[] ship1 = new[]
-        {
-            /*{
-             new ShipDirector().Construct(new OneSailShipBuilder(1, "Ship A1", 3, 1))                              
+        {             
+            new ShipDirector().Construct(new OneSailShipBuilder(1, "Boat", 1, 3))                                                        
         };
         private readonly PlaceableObject[] ship2 = new[]
         {
-            new ShipDirector().Construct(new TwoSailShipBuilder(2, "Ship A2", 2, 2))
+            new ShipDirector().Construct(new TwoSailShipBuilder(2, "TinyShip", 2, 2))                                              
         };
         private readonly PlaceableObject[] ship3 = new[]
         {
-            new ShipDirector().Construct(new ThreeSailShipBuilder(3, "Ship A3", 1, 3))
-        };
-        private readonly PlaceableObject[] superShip1 = new[]
-        {
-            new OneSailSuperShip(1, "Super Ship S1", 8, 4)                                   
-        };
-        private readonly PlaceableObject[] superShip2 = new[]
-        {
-            new TwoSailSuperShip(4, "Super Ship S2", 2, 5)                                   
-        };
-        private readonly PlaceableObject[] superShip3 = new[]
-        {
-            new ThreeSailSuperShip(5, "Super Ship S3", 4, 6) */           
-            new Boat(1, "Boat", 3, 1)                                   
-        };
-        private readonly PlaceableObject[] ship2 = new[]
-        {
-            new SailBoat(2, "TinyShip", 2, 2)                                   
-        };
-        private readonly PlaceableObject[] ship3 = new[]
-        {
-            new Brig(3, "Brig", 1, 3)                                   
+            new ShipDirector().Construct(new ThreeSailShipBuilder(3, "Brig", 3, 1))                                               
         };
         private readonly PlaceableObject[] superShip1 = new[]
         {

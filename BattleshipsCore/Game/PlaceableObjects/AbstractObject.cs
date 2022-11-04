@@ -16,16 +16,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
         public override Product_Level_One_Ships CreateLevel1(int type, string name, int length, int max)
         {
             if(type == 1){  
-                //return director.Construct(new OneSailShipBuilder(length, name, max, type));              
-                return new Boat(length, name, max, type);
+                return director.Construct(new OneSailShipBuilder(length, name, max, type));                             
             }
             else if(type == 2){
-                //return director.Construct(new TwoSailShipBuilder(length, name, max, type));
-                return new SailBoat(length, name, max, type);
+                return director.Construct(new TwoSailShipBuilder(length, name, max, type));               
             }
             else if(type == 3){
-                //return director.Construct(new ThreeSailShipBuilder(length, name, max, type));
-                return new Brig(length, name, max, type);
+                return director.Construct(new ThreeSailShipBuilder(length, name, max, type));                
             }
             return null;
         }
@@ -43,16 +40,13 @@ namespace BattleshipsCore.Game.PlaceableObjects
 
         public override Product_Level_Two_Ships CreateLevel2(int type, string name, int length, int max)
         {
-            if(type == 4){
-                //return new OneSailSuperShip(length, name, max, type);
+            if(type == 4){                
                 return new NarrowBoat(length, name, max, type);
             }
-            else if(type == 5){
-                //return new TwoSailSuperShip(length, name, max, type);
+            else if(type == 5){                
                 return new Cruise(length, name, max, type);
             }
-            else if(type == 6){
-                //return new ThreeSailSuperShip(length, name, max, type);
+            else if(type == 6){           
                 return new Tanker(length, name, max, type);
             }
             return null;
