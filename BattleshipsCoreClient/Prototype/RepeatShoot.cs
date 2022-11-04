@@ -1,12 +1,17 @@
-
+using BattleshipsCore.Game.ShootingStrategy;
 
 namespace BattleshipsCoreClient.Prototype
 {
     public class RepeatShoot : ShallowPrototype
     {
-        public override ShallowPrototype Clone()
+        public ShootingStrategy ShootType;
+        public RepeatShoot(ShootingStrategy shootType)
         {
-            return this.MemberwiseClone() as ShallowPrototype;
+            ShootType = shootType;
+        }
+        public override ShootingStrategy Clone()
+        {
+            return ShootType;
         }
     }
 }

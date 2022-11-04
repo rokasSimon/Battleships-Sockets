@@ -21,7 +21,7 @@ namespace BattleshipsCoreClient
         private ShootingStrategy shootingStrategy { get; set; }
         private DeepPrototype ShootPrototype = new TileShootPrototype(new SingleTileShooting(),
          new AreaShooting(), new HorizontalLineShooting(), new VerticalLineShooting());
-        private ShallowPrototype Repeat = new RepeatShoot();
+        private ShallowPrototype Repeat = new RepeatShoot(new SingleTileShooting());
 
         public ShootingForm()
         {
@@ -181,6 +181,7 @@ namespace BattleshipsCoreClient
 
         private async void UpdateGame(List<TileUpdate> updates, GameState newGameState)
         {
+            Repeat = new RepeatShoot(shootingStrategy);
             switch (newGameState)
             {
                 case GameState.Won: await WinAsync(); break;
@@ -302,7 +303,7 @@ namespace BattleshipsCoreClient
 
         private void SetLastShootedShootStrategy(object sender, EventArgs e)
         {
-            Repeat.Clone();
+            shootingStrategy = Repeat.Clone();
             label2.Text = " - RepeatLastShoot";
         }
 
