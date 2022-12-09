@@ -1,5 +1,6 @@
 ﻿using BattleshipsCore.Game;
 using BattleshipsCore.Server;
+using BattleshipsCore.Server.ConsoleCommands;
 using System.Diagnostics;
 using System.Net;
 
@@ -23,9 +24,25 @@ ServerLogger.Instance.LogInfo("Starting server;");
 using (var serverListener = new AsyncSocketServer(selectedIpAddress, commandParser))
 {
     serverListener.Run();
+    var serverContext = new ServerContext(serverListener);
+    var tokeniser = new ConsoleCommandTokenParser();
+    var parser = new ConsoleExpressionParser();
 
     ServerLogger.Instance.LogInfo("Server is running;");
-    Console.Read();
+    while (true)
+    {
+        var tokens = tokeniser.ReadTokens();
+        var statement = parser.ParseTokens(tokens);
+
+        if (statement == null)
+        {
+            ServerLogger.Instance.LogError("Failed to parse command");
+        }
+        else if (statement is PrintStatement || statement is DisconnectStatement)
+        {
+            statement.Interpret(serverContext);
+        }
+    }
 }
 
 async static Task<IPAddress> SelectIpAddressAsync()

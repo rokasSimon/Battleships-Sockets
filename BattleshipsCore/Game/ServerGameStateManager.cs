@@ -130,6 +130,11 @@ namespace BattleshipsCore.Game
                 .ToList();
         }
 
+        public List<GameSession> GetSessions()
+        {
+            return _sessions.Values.ToList();
+        }
+
         public void RemoveSession(Guid sessionId)
         {
             var session = GetSession(sessionId)!;

@@ -22,6 +22,7 @@
         SendSessionData,
         SendMapData,
         SendTileUpdate,
+        SendText,
 
         CreateSession,
 
