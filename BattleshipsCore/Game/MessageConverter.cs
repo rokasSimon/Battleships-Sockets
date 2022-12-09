@@ -79,6 +79,7 @@ namespace BattleshipsCore.Game
                 MessageType.SendSessionData => ToMessage<SendSessionDataResponse>(jo),
                 MessageType.SendMapData => ToMessage<SendMapDataResponse>(jo),
                 MessageType.SendTileUpdate => ToMessage<SendTileUpdateResponse>(jo),
+                MessageType.SendText => ToMessage<SendTextResponse>(jo),
                 MessageType.NewSessionsAdded => ToMessage<NewSessionsAddedResponse>(jo),
 
                 MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
