@@ -8,6 +8,7 @@ using BattleshipsCore.Responses;
 using BattleshipsCore.Server;
 using BattleshipsCoreClient.Commands;
 using BattleshipsCoreClient.Data;
+using BattleshipsCoreClient.Iterator;
 using BattleshipsCoreClient.Observer;
 using BattleshipsCoreClient.PlacementFormComponents;
 
@@ -59,7 +60,7 @@ namespace BattleshipsCoreClient
 
             _placeableObjectMenu = new PlaceableObjectMenu(PlaceableObjectPanel);
             _tileGrid = new TileGrid(TileGrid);
-            
+
             if(level == 1)
             {
                 InitializePlaceableObjects(ship1);
@@ -154,6 +155,8 @@ namespace BattleshipsCoreClient
 
                 _executedCommandStack.Push(placeCommand);
             }
+
+            Iterate();
         }
 
         private async void LeaveButton_Click(object sender, EventArgs e)
@@ -218,6 +221,8 @@ namespace BattleshipsCoreClient
             if (lastCommand == null) return;
 
             lastCommand.Undo();
+
+            Iterate();
         }
 
         private void ExecuteCommand(ICommand command)
@@ -273,6 +278,32 @@ namespace BattleshipsCoreClient
                     MessageBox.Show(ok.Text, "Server Message");
                 });
             }
+        }
+
+        private void Iterate()
+        {
+            var iterator = _tileGrid.CreateIterator() as GameTileIterator;
+
+            for (Tile? tile = iterator!.First(); !iterator.IsDone(); tile = iterator.Next())
+            {
+                if (tile == null) return;
+
+                tile.IsDisabled = false;
+            }
+
+            for (Tile? tile = iterator!.First(); !iterator.IsDone(); tile = iterator.Next())
+            {
+                if (tile == null) return;
+
+                var adjTiles = iterator.getAdjectedTiles();
+
+                if (adjTiles.Any(i => i.Type == TileType.Ship || i.Type == TileType.Tank)) {
+                    var isExisitingUnit = tile.Type == TileType.Ship || tile.Type == TileType.Tank;
+                    if (!isExisitingUnit) tile.IsDisabled = true;
+                }
+            }
+
+            _tileGrid.UpdateTilesAccessablity();
         }
     }
 }

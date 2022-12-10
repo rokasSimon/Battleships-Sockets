@@ -2,6 +2,7 @@
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
 using BattleshipsCoreClient.Extensions;
+using BattleshipsCoreClient.Iterator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BattleshipsCoreClient.PlacementFormComponents
 {
-    internal class TileGrid
+    public class TileGrid : ITileAggregate
     {
         private TableLayoutPanel _panel;
 
@@ -74,7 +75,9 @@ namespace BattleshipsCoreClient.PlacementFormComponents
         }
 
         public bool IsPlaceable(Vec2 position, PlaceableObject placeableObject)
-        {
+        { 
+            if (_currentGrid![position.X, position.Y].IsDisabled) return false;
+
             return placeableObject.IsPlaceable(_currentGrid, position);
         }
 
@@ -85,6 +88,23 @@ namespace BattleshipsCoreClient.PlacementFormComponents
                 var selBut = _panel.GetControlFromPosition(item.Y, item.X);
 
                 selBut.BackColor = newColor;
+            }
+        }
+
+        public void UpdateTilesAccessablity()
+        {
+            for (int i = 0; i < RowCount; i++) {
+
+                for (int j = 0; j < ColumnCount; j++)
+                {
+                    if (_currentGrid![j, i].IsDisabled)
+                    {
+                        _panel.GetControlFromPosition(i, j).Text = "x";
+                    }
+                    else {
+                        _panel.GetControlFromPosition(i, j).Text = "";
+                    }
+                }
             }
         }
 
@@ -135,6 +155,26 @@ namespace BattleshipsCoreClient.PlacementFormComponents
             }
 
             return previousStates;
+        }
+
+        public int RowCount
+        {
+            get { return _currentGrid!.GetLength(0); }
+        }
+
+        public int ColumnCount
+        {
+            get { return _currentGrid!.GetLength(1); }
+        }
+
+        public Tile this[int i, int j]
+        {
+            get { return _currentGrid![i, j]; }
+        }
+
+        public override ITileIterator CreateIterator()
+        {
+            return new GameTileIterator(this);
         }
     }
 }
