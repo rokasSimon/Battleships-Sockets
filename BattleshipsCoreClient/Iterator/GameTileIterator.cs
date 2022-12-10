@@ -26,7 +26,9 @@ namespace BattleshipsCoreClient.Iterator
 
         public Tile First()
         {
-            return _tileGrid[0, 0];
+            rowIndex = 0;
+            columnIndex = 0;
+            return _tileGrid[rowIndex, columnIndex];
         }
 
         public bool IsDone()

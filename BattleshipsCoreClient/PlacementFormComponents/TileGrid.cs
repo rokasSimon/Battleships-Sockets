@@ -97,7 +97,13 @@ namespace BattleshipsCoreClient.PlacementFormComponents
 
                 for (int j = 0; j < ColumnCount; j++)
                 {
-                    if(_currentGrid![j, i].IsDisabled) _panel.GetControlFromPosition(i, j).Text = "x";
+                    if (_currentGrid![j, i].IsDisabled)
+                    {
+                        _panel.GetControlFromPosition(i, j).Text = "x";
+                    }
+                    else {
+                        _panel.GetControlFromPosition(i, j).Text = "";
+                    }
                 }
             }
         }

@@ -153,10 +153,10 @@ namespace BattleshipsCoreClient
 
                 ExecuteCommand(placeCommand);
 
-                Iterate();
-
                 _executedCommandStack.Push(placeCommand);
             }
+
+            Iterate();
         }
 
         private async void LeaveButton_Click(object sender, EventArgs e)
@@ -221,6 +221,8 @@ namespace BattleshipsCoreClient
             if (lastCommand == null) return;
 
             lastCommand.Undo();
+
+            Iterate();
         }
 
         private void ExecuteCommand(ICommand command)
@@ -286,11 +288,18 @@ namespace BattleshipsCoreClient
             {
                 if (tile == null) return;
 
+                tile.IsDisabled = false;
+            }
+
+            for (Tile? tile = iterator!.First(); !iterator.IsDone(); tile = iterator.Next())
+            {
+                if (tile == null) return;
+
                 var adjTiles = iterator.getAdjectedTiles();
 
                 if (adjTiles.Any(i => i.Type == TileType.Ship || i.Type == TileType.Tank)) {
                     var isExisitingUnit = tile.Type == TileType.Ship || tile.Type == TileType.Tank;
-                    if(!isExisitingUnit) tile.IsDisabled = true;
+                    if (!isExisitingUnit) tile.IsDisabled = true;
                 }
             }
 
