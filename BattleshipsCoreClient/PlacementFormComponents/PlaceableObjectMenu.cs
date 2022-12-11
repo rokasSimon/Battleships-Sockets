@@ -1,5 +1,7 @@
 ﻿using BattleshipsCore.Game.PlaceableObjects;
 using BattleshipsCoreClient.Data;
+using BattleshipsCoreClient.Flyweight;
+using System.Drawing.Imaging;
 
 namespace BattleshipsCoreClient.PlacementFormComponents
 {
@@ -12,6 +14,8 @@ namespace BattleshipsCoreClient.PlacementFormComponents
         private readonly Dictionary<Guid, PlaceableObjectButton> _placeableObjectButtons;
 
         private PlaceableObjectButton? _selectedPlaceableObject;
+
+        private ImageFlyweightFactory _flyweightFactory;
 
         public Guid? SelectedButtonId
         {
@@ -31,6 +35,7 @@ namespace BattleshipsCoreClient.PlacementFormComponents
         {
             _placeableObjectButtonPanel = placeableObjectButtonPanel;
             _placeableObjectButtons = new Dictionary<Guid, PlaceableObjectButton>();
+            _flyweightFactory = new ImageFlyweightFactory();
         }
 
         public void AddSelection(
@@ -42,9 +47,11 @@ namespace BattleshipsCoreClient.PlacementFormComponents
             {
                 Name = id.ToString(),
                 Text = PlaceableObjectButtonText(data.PlaceableObject.Name, data.PlaceableObject.MaximumCount),
-                AutoSize = true,
+                Width = 150,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = _inactiveColor,
+                ImageAlign = ContentAlignment.MiddleRight,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Image = _flyweightFactory.GetFlyweight("ship").getImage(),
             };
 
             button.Click += clickAction;
