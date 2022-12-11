@@ -18,7 +18,7 @@ if (Process.GetProcesses().Count(p => p.ProcessName == serverProcessName) > 1)
 
 ServerLogger.Instance.ShowTimestamp = true;
 var selectedIpAddress = await SelectIpAddressAsync();
-var commandParser = new GameMessageParser();
+var commandParser = new MonitoredGameMessageParser();
 
 ServerLogger.Instance.LogInfo("Starting server;");
 using (var serverListener = new AsyncSocketServer(selectedIpAddress, commandParser))
