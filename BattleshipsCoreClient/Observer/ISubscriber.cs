@@ -1,9 +1,9 @@
-﻿using Message = BattleshipsCore.Interfaces.Message;
+﻿using BattleshipsCore.Interfaces;
 
 namespace BattleshipsCoreClient.Observer
 {
     public interface ISubscriber
     {
-        Task UpdateAsync(Message message);
+        Task UpdateAsync(AcceptableResponse message);
     }
 }

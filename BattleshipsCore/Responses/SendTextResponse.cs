@@ -3,7 +3,7 @@ using BattleshipsCore.Interfaces;
 
 namespace BattleshipsCore.Responses
 {
-    public class SendTextResponse : Message
+    public class SendTextResponse : AcceptableResponse
     {
         public override MessageType Type => MessageType.SendText;
         public string Text { get; set; }
@@ -11,6 +11,10 @@ namespace BattleshipsCore.Responses
         public SendTextResponse(string text)
         {
             Text = text;
+        }
+        public override async Task Accept(IResponseVisitor v)
+        {
+            await v.Visit(this);
         }
     }
 }

@@ -118,6 +118,7 @@ namespace BattleshipsCore.Server
 
                 CheckForDisconnectedClients();
 
+                Array.Clear(client.Buffer);
                 client.Socket.BeginReceive(client.Buffer, 0, client.Buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), client);
             }
             catch (JsonSerializationException e)

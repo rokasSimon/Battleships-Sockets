@@ -16,5 +16,16 @@
             x = X;
             y = Y;
         }
+
+        public static bool InsideGrid(Vec2 position, Vec2 gridSize)
+        {
+            if (position.X < 0
+                || position.Y < 0
+                || position.X >= gridSize.X
+                || position.Y >= gridSize.Y)
+                return false;
+
+            return true;
+        }
     }
 }

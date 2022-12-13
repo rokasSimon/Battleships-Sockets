@@ -2,15 +2,14 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 
-#nullable disable
-
 namespace BattleshipsCore.Responses
 {
-    public class SendSessionDataResponse : AcceptableResponse
+    public class ActiveTurnResponse : AcceptableResponse
     {
-        public override MessageType Type => MessageType.SendSessionData;
+        public override MessageType Type => MessageType.ActiveTurn;
 
-        public GameSessionData SessionData { get; set; }
+        public List<TileUpdate> YourBoardUpdates { get; set; }
+
         public override async Task Accept(IResponseVisitor v)
         {
             await v.Visit(this);

@@ -37,7 +37,6 @@ namespace BattleshipsCore.Game
             if (_players.ContainsKey(player.Name)) return false;
 
             _players.Add(player.Name, player);
-            //Attach(player);
 
             return true;
         }

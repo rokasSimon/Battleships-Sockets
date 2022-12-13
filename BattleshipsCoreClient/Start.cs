@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using BattleshipsCore.Game;
+using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Observer;
-using Message = BattleshipsCore.Interfaces.Message;
 
 namespace BattleshipsCoreClient
 {
-    public partial class Start : Form, ISubscriber
+    public partial class Start : Form, ISubscriber, IResponseVisitor
     {
         private string? _username;
 
@@ -69,18 +69,42 @@ namespace BattleshipsCoreClient
             }
         }
 
-        public async Task UpdateAsync(Message message)
+        public async Task UpdateAsync(AcceptableResponse message)
         {
-            if (message is JoinedServerResponse)
-            {
-                GameClientManager.Instance.PlayerName = _username;
-
-                await Facade.SwitchToSessionListFrom(this);
-            }
-            else if (message is FailResponse)
-            {
-                MessageBox.Show("Could not connect to the server.", "Connection Error");
-            }
+            await message.Accept(this);
         }
+
+        public Task Visit(FailResponse response)
+        {
+            MessageBox.Show("Could not connect to the server.", "Connection Error");
+
+            return Task.CompletedTask;
+        }
+
+        public async Task Visit(JoinedServerResponse response)
+        {
+            GameClientManager.Instance.PlayerName = _username;
+
+            await Facade.SwitchToSessionListFrom(this);
+        }
+
+        public Task Visit(ActiveTurnResponse response) => Task.CompletedTask;
+        public Task Visit(InactiveTurnResponse response) => Task.CompletedTask;
+        public Task Visit(LostGameResponse response) => Task.CompletedTask;
+        public Task Visit(NewSessionsAddedResponse response) => Task.CompletedTask;
+        public Task Visit(SendPlayerListResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionDataResponse response) => Task.CompletedTask;
+        public Task Visit(SendTextResponse response) => Task.CompletedTask;
+        public Task Visit(StartedGameResponse response) => Task.CompletedTask;
+        public Task Visit(WonGameResponse response) => Task.CompletedTask;
+        public Task Visit(DisconnectResponse response) => Task.CompletedTask;
+        public Task Visit(JoinedSessionResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionKeyResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionListResponse response) => Task.CompletedTask;
+        public Task Visit(LeftSessionResponse response) => Task.CompletedTask;
+        public Task Visit(OkResponse response) => Task.CompletedTask;
+        public Task Visit(SendMapDataResponse response) => Task.CompletedTask;
+        public Task Visit(SendTileUpdateResponse response) => Task.CompletedTask;
+        public Task Visit(StartedBattleResponse response) => Task.CompletedTask;
     }
 }

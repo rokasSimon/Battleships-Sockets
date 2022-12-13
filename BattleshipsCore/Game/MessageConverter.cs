@@ -113,6 +113,11 @@ namespace BattleshipsCore.Game
                 MessageType.UnsetTiles => ToCommand<UnsetTilesRequest>(jo),
                 MessageType.Shoot => ToCommand<ShootRequest>(jo),
 
+                MessageType.ActiveTurn => ToMessage<ActiveTurnResponse>(jo),
+                MessageType.InactiveTurn => ToMessage<InactiveTurnResponse>(jo),
+                MessageType.WonGame => ToMessage<WonGameResponse>(jo),
+                MessageType.LostGame => ToMessage<LostGameResponse>(jo),
+
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
             };
         }

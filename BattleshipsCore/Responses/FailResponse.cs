@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace BattleshipsCore.Game
 {
-    public class FailResponse : Message
+    public class FailResponse : AcceptableResponse
     {
         public override MessageType Type => MessageType.Fail;
 
@@ -13,6 +13,10 @@ namespace BattleshipsCore.Game
         public FailResponse(string explanation = "")
         {
             Explanation = explanation;
+        }
+        public override async Task Accept(IResponseVisitor v)
+        {
+            await v.Visit(this);
         }
     }
 }

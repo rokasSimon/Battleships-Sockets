@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BattleshipsCore.Responses
 {
-    public class NewSessionsAddedResponse : Message
+    public class NewSessionsAddedResponse : AcceptableResponse
     {
 
         public override MessageType Type => MessageType.NewSessionsAdded;
@@ -19,6 +19,10 @@ namespace BattleshipsCore.Responses
         public NewSessionsAddedResponse(int sessionCount)
         {
             SessionCount = sessionCount;
+        }
+        public override async Task Accept(IResponseVisitor v)
+        {
+            await v.Visit(this);
         }
     }
 }

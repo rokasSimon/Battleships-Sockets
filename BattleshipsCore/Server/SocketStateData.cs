@@ -4,7 +4,7 @@ namespace BattleshipsCore.Server
 {
     public class SocketStateData
     {
-        public const int ClientBufferSize = 4096;
+        public const int ClientBufferSize = 8000;
 
         public Guid Id { get; init; }
         public Socket Socket { get; init; }
