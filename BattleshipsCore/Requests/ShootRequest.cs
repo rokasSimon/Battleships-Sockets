@@ -3,6 +3,7 @@ using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
+using BattleshipsCore.Server;
 
 namespace BattleshipsCore.Requests
 {
@@ -30,20 +31,34 @@ namespace BattleshipsCore.Requests
 
             var session = thisPlayer.JoinedSession;
 
-            var (newGameState, tileUpdate) = session.Shoot(Initiator, Pos);
+            try
+            {
+                var (isGameOver, updates) = session.Shoot(Initiator, Pos);
 
-            if (newGameState == GameState.Unknown)
+                var otherPlayer = session.PlayerNames.Except(new[] { thisPlayer.Name }).First();
+                var otherPlayerConnection = ServerGameStateManager.Instance.GetPlayer(otherPlayer)!;
+
+                if (isGameOver)
+                {
+                    return new List<(Message, Guid)>
+                    {
+                        (new WonGameResponse { TileUpdates = updates }, connectionId),
+                        (new LostGameResponse { TileUpdates = updates }, otherPlayerConnection.SocketData.Id),
+                    };
+                }
+
+                return new List<(Message, Guid)>
+                {
+                    (new ActiveTurnResponse { YourBoardUpdates = updates }, otherPlayerConnection.SocketData.Id),
+                    (new InactiveTurnResponse { EnemyBoardUpdates = updates }, connectionId),
+                };
+            }
+            catch (Exception e)
+            {
+                ServerLogger.Instance.LogError(e.Message);
+
                 return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
-
-            var otherPlayer = session.PlayerNames.Except(new[] { thisPlayer.Name }).First();
-            var otherPlayerData = ServerGameStateManager.Instance.GetPlayer(otherPlayer)!;
-            var (otherPlayerState, otherPlayerUpdates) = session.GetTurnFor(otherPlayer);
-
-            return new List<(Message, Guid)>
-            { 
-                (new SendTileUpdateResponse(newGameState, tileUpdate), connectionId),
-                (new SendTileUpdateResponse(otherPlayerState, otherPlayerUpdates), otherPlayerData.SocketData.Id),
-            };
+            }
         }
     }
 }

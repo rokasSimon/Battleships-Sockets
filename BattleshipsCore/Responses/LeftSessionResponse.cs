@@ -3,7 +3,7 @@ using BattleshipsCore.Interfaces;
 
 namespace BattleshipsCore.Responses
 {
-    public class LeftSessionResponse : Message
+    public class LeftSessionResponse : AcceptableResponse
     {
         public override MessageType Type => MessageType.LeftSession;
 
@@ -12,6 +12,10 @@ namespace BattleshipsCore.Responses
         public LeftSessionResponse(Guid sessionKey)
         {
             SessionKey = sessionKey;
+        }
+        public override async Task Accept(IResponseVisitor v)
+        {
+            await v.Visit(this);
         }
     }
 }

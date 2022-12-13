@@ -1,10 +1,10 @@
-﻿using Message = BattleshipsCore.Interfaces.Message;
+﻿using BattleshipsCore.Interfaces;
 
 namespace BattleshipsCoreClient.Observer
 {
     public interface IMessagePublisher
     {
-        Task Notify(Message message);
+        Task Notify(AcceptableResponse message);
 
         void Subscribe(ISubscriber listener);
         void Unsubscribe(ISubscriber listener);

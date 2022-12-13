@@ -42,6 +42,11 @@
         UnsetTiles,
         Shoot,
 
+        ActiveTurn,
+        InactiveTurn,
+        LostGame,
+        WonGame,
+
         NewSessionsAdded,
     }
 }

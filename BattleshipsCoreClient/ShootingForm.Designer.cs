@@ -63,9 +63,9 @@
             this.TurnLabel.AutoSize = true;
             this.TurnLabel.Location = new System.Drawing.Point(111, 9);
             this.TurnLabel.Name = "TurnLabel";
-            this.TurnLabel.Size = new System.Drawing.Size(58, 15);
+            this.TurnLabel.Size = new System.Drawing.Size(42, 15);
             this.TurnLabel.TabIndex = 1;
-            this.TurnLabel.Text = "Your Turn";
+            this.TurnLabel.Text = "UNSET";
             // 
             // button1
             // 

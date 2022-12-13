@@ -6,7 +6,7 @@ namespace BattleshipsCore.Game
 {
     internal class GameSession
     {
-        private readonly Dictionary<string, PlayerGameState> _playerMaps;
+        private readonly Dictionary<string, PlayerMapInstance> _playerMaps;
         private readonly Dictionary<string, PlayerData> _players;
 
         public bool Active { get; private set; }
@@ -22,7 +22,7 @@ namespace BattleshipsCore.Game
             SessionName = sessionName;
 
             _players = new Dictionary<string, PlayerData>();
-            _playerMaps = new Dictionary<string, PlayerGameState>();
+            _playerMaps = new Dictionary<string, PlayerMapInstance>();
 
             Join(initiator);
         }
@@ -37,8 +37,11 @@ namespace BattleshipsCore.Game
                 return true;
             }
 
+            var isFirstPlayer = _players.Count == 0;
+
             player.JoinedSession = this;
             _players.Add(player.Name, player);
+            _playerMaps.Add(player.Name, GenerateNewMap(isFirstPlayer));
 
             return true;
         }
@@ -51,6 +54,7 @@ namespace BattleshipsCore.Game
             p.JoinedSession = null;
 
             _players.Remove(player.Name);
+            _playerMaps.Remove(player.Name);
 
             return true;
         }
@@ -61,13 +65,6 @@ namespace BattleshipsCore.Game
             {
                 Active = true;
                 BattleActive = false;
-
-                foreach (var player in _players)
-                {
-                    var generatedMap = GenerateNewMap();
-
-                    _playerMaps.Add(player.Key, generatedMap);
-                }
 
                 return true;
             }
@@ -116,8 +113,9 @@ namespace BattleshipsCore.Game
                     }
                 }
 
-                playerGameState.TilesToHit = objectsToPlace.SelectMany(x => x.Tiles).Count();
-                playerGameState.Grid = newSet;
+                //playerGameState.TilesToHit = objectsToPlace.SelectMany(x => x.Tiles).Count();
+                //playerGameState.Grid = newSet;
+                playerGameState.State.SetTiles(newSet);
 
                 return true;
             }
@@ -142,85 +140,55 @@ namespace BattleshipsCore.Game
 
             if (map == null) return null;
 
-            return new GameMapData { Grid = map.OriginalGrid };
+            return new GameMapData { Grid = map.OriginalGrid, Active = map.State.CanAct };
         }
 
         public bool StartBattle()
         {
-            if (_players.Count != 2 || !_playerMaps.Values.All(x => x.Grid != null)) return false;
+            if (_players.Count != 2) return false;
 
-            BattleActive = true;
-            _playerMaps.Values.First().GameState = GameState.YourTurn;
+            var success = _playerMaps.Values.All(x => x.State.StartBattle());
 
-            return true;
-        }
-
-        public (GameState, List<TileUpdate>) GetTurnFor(string playerName)
-        {
-            if (_playerMaps.TryGetValue(playerName, out var gameData))
+            if (success)
             {
-                return (gameData.GameState, gameData.TileToUpdate);
+                BattleActive = true;
+                return true;
             }
 
-            return (GameState.Unknown, new List<TileUpdate>());
+            return false;
         }
 
-        public (GameState, List<TileUpdate>) Shoot(string playerName, List<Vec2> positions)
+        //public (GameState, List<TileUpdate>) GetTurnFor(string playerName)
+        //{
+        //    if (_playerMaps.TryGetValue(playerName, out var gameData))
+        //    {
+        //        var gameState = gameData.State is ActiveTurnState a
+        //            ? GameState.YourTurn
+        //            : GameState.EnemyTurn;
+
+        //        return (gameData.GameState, gameData.TileToUpdate);
+        //    }
+
+        //    return (GameState.Unknown, new List<TileUpdate>());
+        //}
+
+        public (bool, List<TileUpdate>) Shoot(string playerName, List<Vec2> positions)
         {
-            if (!_players.ContainsKey(playerName)) return (GameState.Unknown, new List<TileUpdate>());
+            if (!_players.ContainsKey(playerName)) throw new ArgumentException("No such player exists");
 
             var myMap = _playerMaps[playerName];
-            if (myMap.GameState == GameState.EnemyTurn) return (GameState.Unknown, new List<TileUpdate>());
-            if (myMap.GameState == GameState.Lost || myMap.GameState == GameState.Won) return (myMap.GameState, new List<TileUpdate>());
+            if (!myMap.State.CanAct) throw new ArgumentException("Not your turn");
+            if (myMap.State.GameOver) throw new ArgumentException("Game already ended");
 
             var opponentMapData = GetOpponentMapValue(playerName);
-            if (opponentMapData == null) return (GameState.Unknown, new List<TileUpdate>());
+            if (opponentMapData == null) throw new ArgumentException("Missing enemy player");
 
-            var list = new List<TileUpdate>();
+            var updates = myMap.State.ShootPlayer(positions, opponentMapData.State);
 
-            foreach (var position in positions) {
-                if(!IsInsideGrid(opponentMapData.Size, position)) return (GameState.Unknown, new List<TileUpdate>());
-
-                var shotTile = opponentMapData.Grid![position.X, position.Y].Type;
-                var newTileType = shotTile switch
-                {
-                    TileType.Ship => TileType.Hit,
-                    TileType.Tank => TileType.Hit,                    
-                    TileType.NarrowBoat => TileType.Hit,
-                    TileType.Cruise => TileType.Hit,
-                    TileType.Tanker => TileType.Hit,
-                    TileType.Hit => TileType.Hit,
-
-                    _ => TileType.Miss,
-                };
-
-                if (newTileType == TileType.Hit && shotTile != TileType.Hit)
-                {
-                    opponentMapData.TilesToHit--;
-                }
-
-                opponentMapData.Grid![position.X, position.Y].Type = newTileType;
-                var tileUpdate = new TileUpdate(position, newTileType);
-                list.Add(tileUpdate);
-            }
-
-            if (opponentMapData.TilesToHit == 0)
-            {
-                opponentMapData.GameState = GameState.Lost;
-                myMap.GameState = GameState.Won;
-            }
-            else
-            {
-             
-                opponentMapData.TileToUpdate = list;
-                opponentMapData.GameState = GameState.YourTurn;
-                myMap.GameState = GameState.EnemyTurn;
-            }
-
-            return (myMap.GameState, list);
+            return (myMap.State.GameOver, updates);
         }
 
-        private PlayerGameState? GetOpponentMapValue(string playerName)
+        private PlayerMapInstance? GetOpponentMapValue(string playerName)
         {
             foreach (var item in _playerMaps)
             {
@@ -230,9 +198,9 @@ namespace BattleshipsCore.Game
             return null;
         }
 
-        private PlayerGameState GenerateNewMap()
+        private PlayerMapInstance GenerateNewMap(bool goFirst)
         {
-            return new PlayerGameState(new(Constants.GridRowCount, Constants.GridColumnCount));
+            return new PlayerMapInstance(new(Constants.GridRowCount, Constants.GridColumnCount), goFirst);
         }
 
         private static void CopyGrid(Tile[,] source, Tile[,] destination)
@@ -244,17 +212,6 @@ namespace BattleshipsCore.Game
                     destination[i, j] = source[i, j];
                 }
             }
-        }
-
-        private static bool IsInsideGrid(Vec2 gridSize, Vec2 pos)
-        {
-            if (pos.X < 0
-                || pos.Y < 0
-                || pos.X >= gridSize.X
-                || pos.Y >= gridSize.Y)
-                return false;
-
-            return true;
         }
     }
 }
