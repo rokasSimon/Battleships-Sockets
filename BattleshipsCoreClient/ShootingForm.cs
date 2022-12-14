@@ -30,8 +30,7 @@ namespace BattleshipsCoreClient
 
             InitializeComponent();
 
-            FormClosed += ShootingForm_FormClosed;
-
+            FormClosed += ShootingForm_FormClosed;          
             shootingStrategy = ShootPrototype.CloneSingle();
             label1.Text = "Active shooting strategy: ";
             label2.Text = " - SingleTileShooting";

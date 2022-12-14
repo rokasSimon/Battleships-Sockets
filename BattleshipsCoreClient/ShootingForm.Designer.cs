@@ -1,4 +1,5 @@
-﻿namespace BattleshipsCoreClient
+﻿using BattleshipsCoreClient.TemplateMethod;
+namespace BattleshipsCoreClient
 {
     partial class ShootingForm
     {
@@ -59,13 +60,8 @@
             // 
             // TurnLabel
             // 
-            this.TurnLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.TurnLabel.AutoSize = true;
-            this.TurnLabel.Location = new System.Drawing.Point(111, 9);
-            this.TurnLabel.Name = "TurnLabel";
-            this.TurnLabel.Size = new System.Drawing.Size(42, 15);
-            this.TurnLabel.TabIndex = 1;
-            this.TurnLabel.Text = "UNSET";
+            this.TurnLabel = turnLabel.TemplateMethod(TurnLabel, new System.Drawing.Point(111, 9),
+            new System.Drawing.Size(42, 15), "TurnLabel", "UNSET", 1, System.Windows.Forms.AnchorStyles.Top);
             // 
             // button1
             // 
@@ -122,13 +118,9 @@
             this.button5.Click += new System.EventHandler(this.SetLastShootedShootStrategy);
             // 
             // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 164);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 15);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "label1";
+            //
+            this.label1 = simpleLabel.TemplateMethod(label1, new System.Drawing.Point(3, 164),
+            new System.Drawing.Size(38, 15), "label1", "label1", 6, 0);
             // 
             // panel1
             // 
@@ -147,12 +139,8 @@
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 185);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 15);
-            this.label2.TabIndex = 7;
-            this.label2.Text = "label2";
+            this.label2 = simpleLabel.TemplateMethod(label2, new System.Drawing.Point(3, 185),
+            new System.Drawing.Size(38, 15), "label2", "label2", 7, 0);
             // 
             // ShootingForm
             // 
@@ -183,5 +171,7 @@
         private Label label1;
         private Panel panel1;
         private Label label2;
+        private LabelTemplate simpleLabel = new SimpleLabel();
+        private LabelTemplate turnLabel = new AdvancedLabel();
     }
 }
