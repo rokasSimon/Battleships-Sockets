@@ -1,4 +1,6 @@
-﻿namespace BattleshipsCoreClient
+﻿using BattleshipsCoreClient.TemplateMethod;
+
+namespace BattleshipsCoreClient
 {
     partial class Start
     {
@@ -48,22 +50,14 @@
             this.ConnectButton.Click += new System.EventHandler(this.ConnectClick);
             // 
             // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(15, 23);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(63, 15);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Username:";
+            //
+            this.label1 = simpleLabel.TemplateMethod(label1, new System.Drawing.Point(15, 23),
+            new System.Drawing.Size(63, 15), "label1", "Username:", 1, 0); 
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(23, 48);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(55, 15);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Server IP:";
+            this.label2 = simpleLabel.TemplateMethod(label2, new System.Drawing.Point(23, 48),
+            new System.Drawing.Size(55, 15), "label2", "Server IP:", 2, 0); 
             // 
             // panel1
             // 
@@ -115,5 +109,6 @@
         private Panel panel1;
         private TextBox IpTextBox;
         private TextBox UsernameTextBox;
+        private LabelTemplate simpleLabel = new SimpleLabel();
     }
 }
