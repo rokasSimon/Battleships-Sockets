@@ -1,4 +1,5 @@
-﻿using BattleshipsCore.Game.GameGrid;
+﻿using BattleshipsCore.Game.ChainOfResponse;
+using BattleshipsCore.Game.GameGrid;
 using Newtonsoft.Json;
 
 namespace BattleshipsCore.Game.PlaceableObjects
