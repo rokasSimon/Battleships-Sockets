@@ -105,7 +105,7 @@ namespace BattleshipsCoreClient
 
         private async void Button_Click(object? sender, EventArgs e)
         {
-            GameClientManager.Instance.Client.Send("a", "I am shooting");
+            GameClientManager.Instance.Client.Send(GameClientManager.Instance.PlayerName, "I am shooting");
             if (InputDisabled) return;
 
             var button = (Button)sender!;
