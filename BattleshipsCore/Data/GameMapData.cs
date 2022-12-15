@@ -7,5 +7,6 @@ namespace BattleshipsCore.Data
     public class GameMapData
     {
         public Tile[,] Grid { get; set; }
+        public bool Active { get; set; }
     }
 }

@@ -6,10 +6,14 @@ using BattleshipsCore.Interfaces;
 
 namespace BattleshipsCore.Responses
 {
-    public class SendSessionDataResponse : Message
+    public class SendSessionDataResponse : AcceptableResponse
     {
         public override MessageType Type => MessageType.SendSessionData;
 
         public GameSessionData SessionData { get; set; }
+        public override async Task Accept(IResponseVisitor v)
+        {
+            await v.Visit(this);
+        }
     }
 }

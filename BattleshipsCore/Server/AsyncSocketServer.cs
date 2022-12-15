@@ -5,6 +5,7 @@ using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using Newtonsoft.Json;
 using BattleshipsCore.Communication;
+using BattleshipsCore.Responses;
 
 namespace BattleshipsCore.Server
 {
@@ -34,6 +35,15 @@ namespace BattleshipsCore.Server
             _serverSocket.Listen(MaximumSocketQueueSize);
 
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
+        }
+
+        public void SendText(SendTextResponse text, SocketStateData socketData)
+        {
+            var message = JsonConvert.SerializeObject(text);
+
+            var data = Encoding.UTF8.GetBytes(message + "<EOF>");
+
+            socketData.Socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(SendCallback), socketData);
         }
 
         private void AcceptCallback(IAsyncResult ar)
@@ -108,6 +118,7 @@ namespace BattleshipsCore.Server
 
                 CheckForDisconnectedClients();
 
+                Array.Clear(client.Buffer);
                 client.Socket.BeginReceive(client.Buffer, 0, client.Buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), client);
             }
             catch (JsonSerializationException e)

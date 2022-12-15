@@ -79,6 +79,7 @@ namespace BattleshipsCore.Game
                 MessageType.SendSessionData => ToMessage<SendSessionDataResponse>(jo),
                 MessageType.SendMapData => ToMessage<SendMapDataResponse>(jo),
                 MessageType.SendTileUpdate => ToMessage<SendTileUpdateResponse>(jo),
+                MessageType.SendText => ToMessage<SendTextResponse>(jo),
                 MessageType.NewSessionsAdded => ToMessage<NewSessionsAddedResponse>(jo),
 
                 MessageType.GetPlayerList => ToCommand<GetPlayerListRequest>(jo),
@@ -111,6 +112,11 @@ namespace BattleshipsCore.Game
                 MessageType.SetTiles => HandleSetTiles(jo),
                 MessageType.UnsetTiles => ToCommand<UnsetTilesRequest>(jo),
                 MessageType.Shoot => ToCommand<ShootRequest>(jo),
+
+                MessageType.ActiveTurn => ToMessage<ActiveTurnResponse>(jo),
+                MessageType.InactiveTurn => ToMessage<InactiveTurnResponse>(jo),
+                MessageType.WonGame => ToMessage<WonGameResponse>(jo),
+                MessageType.LostGame => ToMessage<LostGameResponse>(jo),
 
                 _ => throw new UnknownMessageException($"Unknown message with code: {messageCode};")
             };

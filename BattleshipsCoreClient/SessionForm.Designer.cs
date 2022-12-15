@@ -1,4 +1,6 @@
-﻿namespace BattleshipsCoreClient
+﻿using BattleshipsCoreClient.TemplateMethod;
+
+namespace BattleshipsCoreClient
 {
     partial class SessionForm
     {
@@ -101,13 +103,9 @@
             // 
             // CreateSessionLabel
             // 
-            this.CreateSessionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CreateSessionLabel.AutoSize = true;
-            this.CreateSessionLabel.Location = new System.Drawing.Point(243, 452);
-            this.CreateSessionLabel.Name = "CreateSessionLabel";
-            this.CreateSessionLabel.Size = new System.Drawing.Size(84, 15);
-            this.CreateSessionLabel.TabIndex = 4;
-            this.CreateSessionLabel.Text = "Session Name:";
+            this.CreateSessionLabel = this.template.TemplateMethod(CreateSessionLabel, new System.Drawing.Point(243, 452), 
+            new System.Drawing.Size(84, 15), "CreateSessionLabel", "Session Name:", 4,
+            ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right))));           
             // 
             // DisconnectButton
             // 
@@ -148,5 +146,6 @@
         private TextBox CreateSessionTextBox;
         private Label CreateSessionLabel;
         private Button DisconnectButton;
+        private LabelTemplate template = new AdvancedLabel();
     }
 }

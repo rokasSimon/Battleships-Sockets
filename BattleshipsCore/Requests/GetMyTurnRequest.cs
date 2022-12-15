@@ -1,5 +1,4 @@
-﻿using BattleshipsCore.Data;
-using BattleshipsCore.Game;
+﻿using BattleshipsCore.Game;
 using BattleshipsCore.Interfaces;
 using BattleshipsCore.Responses;
 
@@ -24,9 +23,14 @@ namespace BattleshipsCore.Requests
                 thisPlayer.JoinedSession == null ||
                 !thisPlayer.JoinedSession.BattleActive) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
-            var (myTurn, tileUpdate) = thisPlayer.JoinedSession.GetTurnFor(PlayerName);
+            var map = thisPlayer.JoinedSession!.GetOpponentMap(thisPlayer.Name);
+            if (map == null) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
 
-            return new List<(Message, Guid)> { (new SendTileUpdateResponse(myTurn, tileUpdate), connectionId) };
+            Message response = map.Active
+                ? new InactiveTurnResponse() { EnemyBoardUpdates = new List<Data.TileUpdate>() }
+                : new ActiveTurnResponse() { YourBoardUpdates = new List<Data.TileUpdate>() };
+
+            return new List<(Message, Guid)>() { (response, connectionId) };
         }
     }
 }

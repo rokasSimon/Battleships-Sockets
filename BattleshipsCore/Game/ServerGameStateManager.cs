@@ -37,7 +37,6 @@ namespace BattleshipsCore.Game
             if (_players.ContainsKey(player.Name)) return false;
 
             _players.Add(player.Name, player);
-            //Attach(player);
 
             return true;
         }
@@ -128,6 +127,11 @@ namespace BattleshipsCore.Game
                     };
                 })
                 .ToList();
+        }
+
+        public List<GameSession> GetSessions()
+        {
+            return _sessions.Values.ToList();
         }
 
         public void RemoveSession(Guid sessionId)

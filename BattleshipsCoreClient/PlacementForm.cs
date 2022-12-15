@@ -3,17 +3,19 @@ using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.PlaceableObjects;
 using BattleshipsCore.Game.PlaceableObjects.Builder;
+using BattleshipsCore.Interfaces;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCore.Server;
 using BattleshipsCoreClient.Commands;
 using BattleshipsCoreClient.Data;
+using BattleshipsCoreClient.Iterator;
 using BattleshipsCoreClient.Observer;
 using BattleshipsCoreClient.PlacementFormComponents;
 
 namespace BattleshipsCoreClient
 {
-    public partial class PlacementForm : Form, ISubscriber
+    public partial class PlacementForm : Form, ISubscriber, IResponseVisitor
     {
         private const int MaximumRememberedCommands = 20;
 
@@ -59,7 +61,7 @@ namespace BattleshipsCoreClient
 
             _placeableObjectMenu = new PlaceableObjectMenu(PlaceableObjectPanel);
             _tileGrid = new TileGrid(TileGrid);
-            
+
             if(level == 1)
             {
                 InitializePlaceableObjects(ship1);
@@ -154,6 +156,8 @@ namespace BattleshipsCoreClient
 
                 _executedCommandStack.Push(placeCommand);
             }
+
+            Iterate();
         }
 
         private async void LeaveButton_Click(object sender, EventArgs e)
@@ -218,6 +222,8 @@ namespace BattleshipsCoreClient
             if (lastCommand == null) return;
 
             lastCommand.Undo();
+
+            Iterate();
         }
 
         private void ExecuteCommand(ICommand command)
@@ -237,42 +243,104 @@ namespace BattleshipsCoreClient
             Application.Exit();
         }
 
-        public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
+        private void Iterate()
         {
-            if (message is SendMapDataResponse smdr)
+            var iterator = _tileGrid.CreateIterator() as GameTileIterator;
+
+            for (Tile? tile = iterator!.First(); !iterator.IsDone(); tile = iterator.Next())
             {
-                Invoke(() =>
-                {
-                    InitializeGrid(smdr.MapData);
-                });
+                if (tile == null) return;
+
+                tile.IsDisabled = false;
             }
-            else if (message is SendTileUpdateResponse stur)
+
+            for (Tile? tile = iterator!.First(); !iterator.IsDone(); tile = iterator.Next())
             {
-                if (stur.GameState == GameState.YourTurn)
-                {
-                    Invoke(() =>
-                    {
-                        _tileGrid.SetTiles(stur.TileUpdate);
-                    });
+                if (tile == null) return;
+
+                var adjTiles = iterator.getAdjectedTiles();
+
+                if (adjTiles.Any(i => i.Type == TileType.Ship || i.Type == TileType.Tank)) {
+                    var isExisitingUnit = tile.Type == TileType.Ship || tile.Type == TileType.Tank;
+                    if (!isExisitingUnit) tile.IsDisabled = true;
                 }
             }
-            else if (message is StartedBattleResponse sbr)
-            {
-                InputDisabled = true;
 
-                await Facade.EnableShootingForm();
-            }
-            else if (message is LeftSessionResponse lsr)
-            {
-                await Facade.SwitchToSessionListFrom(this);
-            }
-            else if (message is OkResponse ok)
+            _tileGrid.UpdateTilesAccessablity();
+        }
+
+        public async Task UpdateAsync(AcceptableResponse message)
+        {
+            await message.Accept(this);
+        }
+
+        public Task Visit(SendTileUpdateResponse response)
+        {
+            if (response.GameState == GameState.YourTurn)
             {
                 Invoke(() =>
                 {
-                    MessageBox.Show(ok.Text, "Server Message");
+                    _tileGrid.SetTiles(response.TileUpdate);
                 });
             }
+
+            return Task.CompletedTask;
         }
+
+        public async Task Visit(StartedBattleResponse response)
+        {
+            InputDisabled = true;
+
+            await Facade.EnableShootingForm();
+        }
+
+        public async Task Visit(LeftSessionResponse response)
+        {
+            await Facade.SwitchToSessionListFrom(this);
+        }
+
+        public Task Visit(OkResponse response)
+        {
+            Invoke(() =>
+            {
+                MessageBox.Show(response.Text, "Server Message");
+            });
+
+            return Task.CompletedTask;
+        }
+        public Task Visit(SendMapDataResponse response)
+        {
+            Invoke(() =>
+            {
+                InitializeGrid(response.MapData);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public Task Visit(ActiveTurnResponse response)
+        {
+            Invoke(() =>
+            {
+                _tileGrid.SetTiles(response.YourBoardUpdates);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public Task Visit(FailResponse response) => Task.CompletedTask;
+        public Task Visit(InactiveTurnResponse response) => Task.CompletedTask;
+        public Task Visit(JoinedServerResponse response) => Task.CompletedTask;
+        public Task Visit(LostGameResponse response) => Task.CompletedTask;
+        public Task Visit(NewSessionsAddedResponse response) => Task.CompletedTask;
+        public Task Visit(SendPlayerListResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionDataResponse response) => Task.CompletedTask;
+        public Task Visit(SendTextResponse response) => Task.CompletedTask;
+        public Task Visit(StartedGameResponse response) => Task.CompletedTask;
+        public Task Visit(WonGameResponse response) => Task.CompletedTask;
+        public Task Visit(DisconnectResponse response) => Task.CompletedTask;
+        public Task Visit(JoinedSessionResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionKeyResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionListResponse response) => Task.CompletedTask;
     }
 }

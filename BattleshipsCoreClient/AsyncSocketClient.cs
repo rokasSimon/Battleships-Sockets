@@ -6,13 +6,14 @@ using BattleshipsCore.Server;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Observer;
 using Message = BattleshipsCore.Interfaces.Message;
+using BattleshipsCoreClient.Mediator;
 
 namespace BattleshipsCoreClient
 {
     public class AsyncSocketClient : IMessagePublisher
     {
         private const int ListenerPort = 42069;
-        private const int BufferSize = 4096;
+        private const int BufferSize = 8000;
 
         private readonly IPEndPoint _serverEndPoint;
         private readonly SocketStateData _clientSocketData;
@@ -22,6 +23,9 @@ namespace BattleshipsCoreClient
         private readonly List<ISubscriber> _subscribers;
 
         private bool _isListening;
+        public ChatRoom Chatroom { set; get; }
+
+        public string? PlayerName { get; set; }
 
         public AsyncSocketClient(IPAddress ipAddress, IMessageParser commandFactory)
         {
@@ -76,7 +80,7 @@ namespace BattleshipsCoreClient
             }
         }
 
-        public async Task Notify(Message message)
+        public async Task Notify(AcceptableResponse message)
         {
             for (int i = _subscribers.Count - 1; i >= 0; i--)
             {
@@ -114,7 +118,7 @@ namespace BattleshipsCoreClient
 
                     try
                     {
-                        var parsedMessage = _commandFactory.ParseResponse<Message>(response);
+                        var parsedMessage = _commandFactory.ParseResponse<AcceptableResponse>(response);
 
                         await Notify(parsedMessage);
                     }
@@ -140,15 +144,15 @@ namespace BattleshipsCoreClient
             await _clientSocketData.Socket.SendAsync(data, SocketFlags.None);
         }
 
-        private List<Message> TrySplittingMessage(string response)
+        private List<AcceptableResponse> TrySplittingMessage(string response)
         {
-            var messages = new List<Message>();
+            var messages = new List<AcceptableResponse>();
 
             var splits = response.Split("<EOF>", StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var msg in splits)
             {
-                messages.Add(_commandFactory.ParseResponse<Message>(msg));
+                messages.Add(_commandFactory.ParseResponse<AcceptableResponse>(msg));
             }
 
             return messages;
@@ -175,6 +179,15 @@ namespace BattleshipsCoreClient
             {
                 return null;
             }
+        }
+        public void Send(string to, string message)
+        {
+            Chatroom.Send(PlayerName, to, message);
+        }
+
+        public void Receive(string from, string message)
+        {
+            MessageBox.Show("Message from " + from + " to " + PlayerName + ": '" + message + "'");
         }
     }
 }

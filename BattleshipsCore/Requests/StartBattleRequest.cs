@@ -29,15 +29,39 @@ namespace BattleshipsCore.Requests
 
             var players = ServerGameStateManager.Instance.GetPlayers(player.JoinedSession.PlayerNames.ToArray());
 
-            var response = new StartedBattleResponse();
+            var startedResponse = new StartedBattleResponse();
             var responses = new List<(Message, Guid)>(players.Length);
 
             foreach (var p in players)
             {
-                responses.Add((response, p.SocketData.Id));
+                responses.Add((startedResponse, p.SocketData.Id));
             }
 
+            //foreach (var p in players)
+            //{
+            //    var map = p.JoinedSession!.GetOpponentMap(p.Name);
+
+            //    if (map == null) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
+
+            //    responses.Add((new SendMapDataResponse(map), p.SocketData.Id));
+
+            //    if (map.Active)
+            //    {
+            //        responses.Add((new ActiveTurnResponse { YourBoardUpdates = new List<Data.TileUpdate>() }, p.SocketData.Id));
+            //    }
+            //    else
+            //    {
+            //        responses.Add((new InactiveTurnResponse { EnemyBoardUpdates = new List<Data.TileUpdate>() }, p.SocketData.Id));
+            //    }
+            //}
+
             return responses;
+
+            //var opponentMap = thisPlayer.JoinedSession.GetOpponentMap(PlayerName);
+
+            //if (opponentMap == null) return new List<(Message, Guid)> { (new FailResponse(), connectionId) };
+
+            //return new List<(Message, Guid)> { (new SendMapDataResponse(opponentMap), connectionId) };
         }
     }
 }

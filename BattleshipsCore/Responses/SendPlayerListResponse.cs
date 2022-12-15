@@ -2,7 +2,7 @@
 
 namespace BattleshipsCore.Game
 {
-    public class SendPlayerListResponse : Message
+    public class SendPlayerListResponse : AcceptableResponse
     {
         public override MessageType Type => MessageType.SendPlayerList;
         public string[] PlayerList { get; set; }
@@ -10,6 +10,10 @@ namespace BattleshipsCore.Game
         public SendPlayerListResponse(string[] playerList)
         {
             PlayerList = playerList;
+        }
+        public override async Task Accept(IResponseVisitor v)
+        {
+            await v.Visit(this);
         }
     }
 }

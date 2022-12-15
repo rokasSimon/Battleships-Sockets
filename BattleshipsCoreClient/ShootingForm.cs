@@ -2,16 +2,18 @@
 using BattleshipsCore.Game;
 using BattleshipsCore.Game.GameGrid;
 using BattleshipsCore.Game.ShootingStrategy;
+using BattleshipsCore.Interfaces;
 using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
+using BattleshipsCoreClient.Mediator;
 using BattleshipsCoreClient.Observer;
 using BattleshipsCoreClient.Prototype;
 
 namespace BattleshipsCoreClient
 {
-    public partial class ShootingForm : Form, ISubscriber
+    public partial class ShootingForm : Form, ISubscriber, IResponseVisitor
     {
         //private GameMapData? OriginalMapData { get; set; }
         private Tile[,]? CurrentGrid { get; set; }
@@ -23,14 +25,15 @@ namespace BattleshipsCoreClient
          new AreaShooting(), new HorizontalLineShooting(), new VerticalLineShooting());
         private ShallowPrototype Repeat = new RepeatShoot(new SingleTileShooting());
 
+        private ChatRoom chatRoom = new ChatRoom();
+
         public ShootingForm()
         {
             InputDisabled = true;
 
             InitializeComponent();
 
-            FormClosed += ShootingForm_FormClosed;
-
+            FormClosed += ShootingForm_FormClosed;          
             shootingStrategy = ShootPrototype.CloneSingle();
             label1.Text = "Active shooting strategy: ";
             label2.Text = " - SingleTileShooting";
@@ -43,6 +46,8 @@ namespace BattleshipsCoreClient
 
         private void Initialize(GameMapData opponentMap)
         {
+            GameClientManager.Instance.Client.PlayerName = GameClientManager.Instance.PlayerName;
+            chatRoom.Register(GameClientManager.Instance.Client);
             //OriginalMapData = opponentMap;
             CurrentGrid = opponentMap.Grid;
 
@@ -94,10 +99,13 @@ namespace BattleshipsCoreClient
                     }
                 }
             }
+
+            Text = $"Shooting Form - {GameClientManager.Instance.PlayerName}";
         }
 
         private async void Button_Click(object? sender, EventArgs e)
         {
+            GameClientManager.Instance.Client.Send("a", "I am shooting");
             if (InputDisabled) return;
 
             var button = (Button)sender!;
@@ -188,26 +196,26 @@ namespace BattleshipsCoreClient
             }
         }
 
-        private async void UpdateGame(List<TileUpdate> updates, GameState newGameState)
-        {
-            Repeat = new RepeatShoot(shootingStrategy);
-            switch (newGameState)
-            {
-                case GameState.Won: await WinAsync(); break;
-                case GameState.Lost: await LoseAsync(); break;
-                case GameState.YourTurn: GrantTurn(); break;
-                case GameState.EnemyTurn:
-                    {
-                        foreach (var tu in updates)
-                        {
-                            UpdateTile(tu);
-                        }
-                        TakeAwayTurn();
-                    }
-                    break;
-                default: await QuitGameAsync(); return;
-            }
-        }
+        //private async void UpdateGame(List<TileUpdate> updates, GameState newGameState)
+        //{
+        //    Repeat = new RepeatShoot(shootingStrategy);
+        //    switch (newGameState)
+        //    {
+        //        case GameState.Won: await WinAsync(); break;
+        //        case GameState.Lost: await LoseAsync(); break;
+        //        case GameState.YourTurn: GrantTurn(); break;
+        //        case GameState.EnemyTurn:
+        //            {
+        //                foreach (var tu in updates)
+        //                {
+        //                    UpdateTile(tu);
+        //                }
+        //                TakeAwayTurn();
+        //            }
+        //            break;
+        //        default: await QuitGameAsync(); return;
+        //    }
+        //}
 
         private void UpdateTile(TileUpdate update)
         {
@@ -324,32 +332,113 @@ namespace BattleshipsCoreClient
             label2.Text = " - RepeatLastShoot";
         }
 
-        public async Task UpdateAsync(BattleshipsCore.Interfaces.Message message)
+        public async Task UpdateAsync(AcceptableResponse message)
         {
-            if (message is LeftSessionResponse)
-            {
-                GameClientManager.Instance.ActiveSession = null;
-
-                await Facade.LeaveShootingForm();
-            }
-            else if (message is DisconnectResponse dr)
-            {
-                await Facade.SwitchToConnectionFormFrom(this);
-            }
-            else if (message is SendTileUpdateResponse stur)
-            {
-                TileGrid.Invoke(() =>
-                {
-                    UpdateGame(stur.TileUpdate, stur.GameState);
-                });
-            }
-            else if (message is SendMapDataResponse smdr)
-            {
-                TileGrid.Invoke(() =>
-                {
-                    Initialize(smdr.MapData);
-                });
-            }
+            await message.Accept(this);
         }
+
+        public async Task Visit(DisconnectResponse response)
+        {
+            await Facade.SwitchToConnectionFormFrom(this);
+        }
+
+        public async Task Visit(LeftSessionResponse response)
+        {
+            GameClientManager.Instance.ActiveSession = null;
+
+            await Facade.LeaveShootingForm();
+        }
+
+        public Task Visit(SendMapDataResponse response)
+        {
+            TileGrid.Invoke(() =>
+            {
+                Initialize(response.MapData);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public Task Visit(SendTileUpdateResponse response)
+        {
+            //TileGrid.Invoke(() =>
+            //{
+            //    UpdateGame(response.TileUpdate, response.GameState);
+            //});
+
+            return Task.CompletedTask;
+        }
+
+        public async Task Visit(WonGameResponse response)
+        {
+            Repeat = new RepeatShoot(shootingStrategy);
+
+            await WinAsync();
+        }
+
+        public async Task Visit(LostGameResponse response)
+        {
+            Repeat = new RepeatShoot(shootingStrategy);
+
+            await LoseAsync();
+        }
+
+        public Task Visit(ActiveTurnResponse response)
+        {
+            TileGrid.Invoke(() =>
+            {
+                GrantTurn();
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public Task Visit(InactiveTurnResponse response)
+        {
+            TileGrid.Invoke(() =>
+            {
+                foreach (var tu in response.EnemyBoardUpdates)
+                {
+                    UpdateTile(tu);
+                }
+                TakeAwayTurn();
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public Task Visit(FailResponse response) => Task.CompletedTask;
+        public Task Visit(JoinedServerResponse response) => Task.CompletedTask;
+        public Task Visit(NewSessionsAddedResponse response) => Task.CompletedTask;
+        public Task Visit(SendPlayerListResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionDataResponse response) => Task.CompletedTask;
+        public Task Visit(SendTextResponse response) => Task.CompletedTask;
+        public Task Visit(StartedGameResponse response) => Task.CompletedTask;
+        public Task Visit(JoinedSessionResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionKeyResponse response) => Task.CompletedTask;
+        public Task Visit(SendSessionListResponse response) => Task.CompletedTask;
+        public Task Visit(OkResponse response) => Task.CompletedTask;
+        public Task Visit(StartedBattleResponse response) => Task.CompletedTask;
+
+        //public Task Visit(ActiveTurnResponse response) => Task.CompletedTask;
+        //public Task Visit(FailResponse response) => Task.CompletedTask;
+        //public Task Visit(InactiveTurnResponse response) => Task.CompletedTask;
+        //public Task Visit(JoinedServerResponse response) => Task.CompletedTask;
+        //public Task Visit(LostGameResponse response) => Task.CompletedTask;
+        //public Task Visit(NewSessionsAddedResponse response) => Task.CompletedTask;
+        //public Task Visit(SendPlayerListResponse response) => Task.CompletedTask;
+        //public Task Visit(SendSessionDataResponse response) => Task.CompletedTask;
+        //public Task Visit(SendTextResponse response) => Task.CompletedTask;
+        //public Task Visit(StartedGameResponse response) => Task.CompletedTask;
+        //public Task Visit(WonGameResponse response) => Task.CompletedTask;
+        //public Task Visit(DisconnectResponse response) => Task.CompletedTask;
+        //public Task Visit(JoinedSessionResponse response) => Task.CompletedTask;
+        //public Task Visit(SendSessionKeyResponse response) => Task.CompletedTask;
+        //public Task Visit(SendSessionListResponse response) => Task.CompletedTask;
+        //public Task Visit(LeftSessionResponse response) => Task.CompletedTask;
+        //public Task Visit(OkResponse response) => Task.CompletedTask;
+        //public Task Visit(SendMapDataResponse response) => Task.CompletedTask;
+        //public Task Visit(SendTileUpdateResponse response) => Task.CompletedTask;
+        //public Task Visit(StartedBattleResponse response) => Task.CompletedTask;
     }
 }

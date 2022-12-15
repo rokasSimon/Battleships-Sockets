@@ -22,6 +22,7 @@
         SendSessionData,
         SendMapData,
         SendTileUpdate,
+        SendText,
 
         CreateSession,
 
@@ -40,6 +41,11 @@
         SetTiles,
         UnsetTiles,
         Shoot,
+
+        ActiveTurn,
+        InactiveTurn,
+        LostGame,
+        WonGame,
 
         NewSessionsAdded,
     }
