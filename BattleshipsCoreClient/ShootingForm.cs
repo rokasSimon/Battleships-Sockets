@@ -7,6 +7,7 @@ using BattleshipsCore.Requests;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Data;
 using BattleshipsCoreClient.Extensions;
+using BattleshipsCoreClient.Mediator;
 using BattleshipsCoreClient.Observer;
 using BattleshipsCoreClient.Prototype;
 
@@ -23,6 +24,8 @@ namespace BattleshipsCoreClient
         private DeepPrototype ShootPrototype = new TileShootPrototype(new SingleTileShooting(),
          new AreaShooting(), new HorizontalLineShooting(), new VerticalLineShooting());
         private ShallowPrototype Repeat = new RepeatShoot(new SingleTileShooting());
+
+        private ChatRoom chatRoom = new ChatRoom();
 
         public ShootingForm()
         {
@@ -43,6 +46,8 @@ namespace BattleshipsCoreClient
 
         private void Initialize(GameMapData opponentMap)
         {
+            GameClientManager.Instance.Client.PlayerName = GameClientManager.Instance.PlayerName;
+            chatRoom.Register(GameClientManager.Instance.Client);
             //OriginalMapData = opponentMap;
             CurrentGrid = opponentMap.Grid;
 
@@ -100,6 +105,7 @@ namespace BattleshipsCoreClient
 
         private async void Button_Click(object? sender, EventArgs e)
         {
+            GameClientManager.Instance.Client.Send(GameClientManager.Instance.PlayerName, "I am shooting");
             if (InputDisabled) return;
 
             var button = (Button)sender!;

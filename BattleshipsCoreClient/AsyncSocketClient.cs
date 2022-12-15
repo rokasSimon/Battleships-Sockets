@@ -6,6 +6,7 @@ using BattleshipsCore.Server;
 using BattleshipsCore.Responses;
 using BattleshipsCoreClient.Observer;
 using Message = BattleshipsCore.Interfaces.Message;
+using BattleshipsCoreClient.Mediator;
 
 namespace BattleshipsCoreClient
 {
@@ -22,6 +23,9 @@ namespace BattleshipsCoreClient
         private readonly List<ISubscriber> _subscribers;
 
         private bool _isListening;
+        public ChatRoom Chatroom { set; get; }
+
+        public string? PlayerName { get; set; }
 
         public AsyncSocketClient(IPAddress ipAddress, IMessageParser commandFactory)
         {
@@ -175,6 +179,15 @@ namespace BattleshipsCoreClient
             {
                 return null;
             }
+        }
+        public void Send(string to, string message)
+        {
+            Chatroom.Send(PlayerName, to, message);
+        }
+
+        public void Receive(string from, string message)
+        {
+            MessageBox.Show("Message from " + from + " to " + PlayerName + ": '" + message + "'");
         }
     }
 }
